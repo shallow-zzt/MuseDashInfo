@@ -30,3 +30,20 @@ type UserData struct {
 	updated_at string
 	user_id    string
 }
+
+type MDdbData struct {
+	platform         int
+	musicAlbum       int
+	musicAlbumNumber int
+	musicDiff        int
+	rank             int
+	userId           string
+	acc              float64
+	miss             int
+	score            int
+	judge            string
+	characterId      int
+	elfinId          int
+	playTime         string
+	nickname         string
+}
