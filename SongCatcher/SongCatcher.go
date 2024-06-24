@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3" // Use SQLite driver
 )
@@ -35,10 +36,15 @@ func Catcher() {
 			for songDiff := 1; songDiff <= MAX_DIFF; songDiff++ {
 				for platform := 0; platform <= 1; platform++ {
 					for offset := 0; offset <= 17; offset++ {
+						if offset%5 == 0 {
+							t := time.After(1 * time.Second)
+							<-t
+						}
 						apiData, err := getAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
+
 						mdStatus := apiData.(map[string]interface{})["total"]
 						fmt.Println(mdStatus)
-						if int(mdStatus.(float64)) != 2000 {
+						if mdStatus != nil && (mdStatus.(float64)) != 2000 {
 							break
 						}
 						mdDatas := apiData.(map[string]interface{})["result"].([]interface{})

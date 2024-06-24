@@ -1,162 +1,185 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
+	MiniGame "db/Minigame"
+	"db/SongCatcher"
+	"db/SongDataUpdater"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"strconv"
-	"strings"
+	"html/template"
+	"image/png"
+	"io"
+	"log"
+	"net/http"
+	"path/filepath"
 
-	_ "github.com/mattn/go-sqlite3" // Use SQLite driver
+	"github.com/gorilla/sessions"
 )
 
-const (
-	ASSETS_PATH = "SongAssets/Json/"
-)
-
-type AlbumData struct {
-	albumCode    string
-	albumNameCN  string
-	albumNameCNT string
-	albumNameEN  string
-	albumNameJA  string
-	albumNameKR  string
+type MiniGameContent struct {
+	Rotateb64      string
+	Answerb64      string
+	Cuttedb64      string
+	SongAnswerName string
 }
 
-type SongData struct {
-	musicAlbum       int
-	musicAlbumNumber int
-	musicName        string
-	musicAuthor      string
-	musicBPM         string
-	musicPicName     string
-	musicSceneName   string
-	musicSheetAuthor []string
-	musicDiff        []string
-	musicSpecialDiff string
+type MiniGameResult struct {
+	Result         int      `json:"result"`
+	ResultNum      int      `json:"result-num"`
+	PossibleResult []string `json:"possible-result"`
 }
+
+var store = sessions.NewCookieStore([]byte("^_^"))
+var db = SongDataUpdater.DBConnector()
 
 func main() {
 
-	db, err := sql.Open("sqlite3", "mdsong.db")
-	if err != nil {
-		fmt.Println("连接数据库失败:", err)
-		return
-	}
-	defer db.Close()
-	createTable(db)
+	go SongCatcher.Catcher()
+	http.HandleFunc("/css/style.css", ServeStaticFile("style.css", "css"))
+	http.HandleFunc("/js/index.js", ServeStaticFile("index.js", "js"))
 
-	albumDatas := getJsonRawFile("albums.json").([]interface{})
-	albumDatasCN := getJsonRawFile("albums_ChineseS.json").([]interface{})
-	albumDatasCNT := getJsonRawFile("albums_ChineseT.json").([]interface{})
-	albumDatasEN := getJsonRawFile("albums_English.json").([]interface{})
-	albumDatasJA := getJsonRawFile("albums_Japanese.json").([]interface{})
-	albumDatasKR := getJsonRawFile("albums_Korean.json").([]interface{})
-	for i, albumData := range albumDatas {
-		var albumDetail AlbumData
-		albumDetail.albumCode = albumData.(map[string]interface{})["jsonName"].(string)
-		albumDetail.albumNameCN = albumDatasCN[i].(map[string]interface{})["title"].(string)
-		albumDetail.albumNameCNT = albumDatasCNT[i].(map[string]interface{})["title"].(string)
-		albumDetail.albumNameEN = albumDatasEN[i].(map[string]interface{})["title"].(string)
-		albumDetail.albumNameJA = albumDatasJA[i].(map[string]interface{})["title"].(string)
-		albumDetail.albumNameKR = albumDatasKR[i].(map[string]interface{})["title"].(string)
-		fmt.Println(albumDetail)
-		if albumDetail.albumCode != "" {
-			albumSongDetails := getJsonRawFile(albumDetail.albumCode + ".json").([]interface{})
-			for _, albumSongDetail := range albumSongDetails {
-				var musicData SongData
-				var err error
-				var ok bool
-				musicAlbumCode := strings.Split(albumSongDetail.(map[string]interface{})["uid"].(string), "-")
-				musicData.musicAlbum, err = strconv.Atoi(musicAlbumCode[0])
-				musicData.musicAlbumNumber, err = strconv.Atoi(musicAlbumCode[1])
-				musicData.musicName = albumSongDetail.(map[string]interface{})["name"].(string)
-				musicData.musicAuthor = albumSongDetail.(map[string]interface{})["author"].(string)
-				musicData.musicBPM = albumSongDetail.(map[string]interface{})["bpm"].(string)
-				musicData.musicPicName = albumSongDetail.(map[string]interface{})["cover"].(string)
-				musicData.musicSceneName = albumSongDetail.(map[string]interface{})["scene"].(string)
-				levelDesigner, ok := albumSongDetail.(map[string]interface{})["levelDesigner"].(string)
-				if !ok {
-					for j := 1; j <= 4; j++ {
-						levelDesigner, ok = albumSongDetail.(map[string]interface{})["levelDesigner"+strconv.Itoa(j)].(string)
-						if ok {
-							musicData.musicSheetAuthor = append(musicData.musicSheetAuthor, levelDesigner)
-						}
-
-					}
-				} else {
-					musicData.musicSheetAuthor = append(musicData.musicSheetAuthor, levelDesigner)
-				}
-				for j := 1; j <= 4; j++ {
-					Difficulty, ok := albumSongDetail.(map[string]interface{})["difficulty"+strconv.Itoa(j)].(string)
-					if ok {
-						musicData.musicDiff = append(musicData.musicDiff, Difficulty)
-					} else {
-						musicData.musicDiff = append(musicData.musicDiff, "0")
-					}
-				}
-				musicData.musicSpecialDiff, ok = albumSongDetail.(map[string]interface{})["difficulty5"].(string)
-				if !ok {
-					musicData.musicSpecialDiff = "0"
-				}
-				if err != nil {
-					fmt.Println(err)
-				}
-				insertMDData(db, musicData)
-
-			}
-		}
-	}
+	http.HandleFunc("/guessgame", miniGameIndex)
+	http.HandleFunc("/submit/answer", JudgeSubmit)
+	http.ListenAndServe(":8080", nil)
 
 }
 
-func getJsonRawFile(filename string) interface{} {
-	var songRawData interface{}
-	data, err := ioutil.ReadFile(ASSETS_PATH + filename)
-	err = json.Unmarshal(data, &songRawData)
+func ServeStaticFile(filename string, fileext string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if fileext == "js" {
+			w.Header().Set("Content-Type", "application/javascript")
+			http.ServeFile(w, r, filepath.Join("static/js", filename))
+		} else if fileext == "css" {
+			w.Header().Set("Content-Type", "text/css")
+			http.ServeFile(w, r, filepath.Join("static/css", filename))
+		}
+	}
+}
+
+func miniGameIndex(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/favicon.ico" {
+		return
+	}
+
+	t, err := template.ParseFiles("Static/index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	miniGameData := generateMiniGameContent(false)
+
+	session, _ := store.Get(r, "minigame-middleware")
+	session.Values["AnswerName"] = miniGameData.SongAnswerName
+	session.Save(r, w)
+	t.Execute(w, MiniGameContent{
+		Rotateb64: miniGameData.Rotateb64,
+		Cuttedb64: miniGameData.Cuttedb64,
+		Answerb64: miniGameData.Answerb64})
+}
+
+func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var requestData map[string]string
+	var MiniGameResult MiniGameResult
+
+	body, err := io.ReadAll(r.Body)
+	err = json.Unmarshal(body, &requestData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	answer := requestData["answer"]
+	session, _ := store.Get(r, "minigame-middleware")
+	answerName := session.Values["AnswerName"].(string)
+
+	answerList := getPossibleAnswer(db, answer)
+
+	if len(answerList) == 0 || len(answerList) >= 5 {
+		MiniGameResult.Result = 0
+		MiniGameResult.ResultNum = 0
+		MiniGameResult.PossibleResult = nil
+	} else if len(answerList) == 1 {
+		MiniGameResult.PossibleResult = answerList
+		MiniGameResult.ResultNum = 1
+		if answer == answerName {
+			MiniGameResult.Result = 1
+		} else if answer == answerList[0] && answer != answerName {
+			MiniGameResult.Result = 0
+			MiniGameResult.ResultNum = 0
+			MiniGameResult.PossibleResult = nil
+		} else {
+			MiniGameResult.Result = 2
+		}
+	} else if len(answerList) >= 2 && len(answerList) <= 4 {
+		MiniGameResult.Result = 2
+		MiniGameResult.ResultNum = len(answerList)
+		MiniGameResult.PossibleResult = answerList
+	}
+
+	fmt.Println(MiniGameResult)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(MiniGameResult)
+}
+
+func generateMiniGameContent(isRotate bool) MiniGameContent {
+
+	songPicName, songAnswerName := getRandomSongPicName(db)
+	songPicPath := "SongAssets/Songpic/" + songPicName
+
+	rotatePic, answerPic, cuttedPic := MiniGame.ProductingSongPic(songPicPath, isRotate)
+
+	rotateBuf := new(bytes.Buffer)
+	answerBuf := new(bytes.Buffer)
+	cuttedBuf := new(bytes.Buffer)
+
+	err := png.Encode(rotateBuf, rotatePic)
+	err = png.Encode(answerBuf, answerPic)
+	err = png.Encode(cuttedBuf, cuttedPic)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return songRawData
+
+	rotateb64 := base64.StdEncoding.EncodeToString(rotateBuf.Bytes())
+	answerb64 := base64.StdEncoding.EncodeToString(answerBuf.Bytes())
+	cuttedb64 := base64.StdEncoding.EncodeToString(cuttedBuf.Bytes())
+
+	return MiniGameContent{Rotateb64: rotateb64, Answerb64: answerb64, Cuttedb64: cuttedb64, SongAnswerName: songAnswerName}
 }
 
-func createTable(db *sql.DB) {
-	play_table_sql := `
-	CREATE TABLE  IF NOT EXISTS mdsong(
-		music_album INTEGER NOT NULL,
-		music_album_number INTEGER NOT NULL,
-		music_name TEXT,
-		music_author TEXT,
-		music_bPM TEXT,
-		music_pic_name TEXT,
-		music_scene_name TEXT,
-		music_sheet_author TEXT, -- Store as JSON string
-		music_diff TEXT,        -- Store as JSON string
-		music_diff_special TEXT,
-		PRIMARY KEY (music_album, music_album_number)
-	);
-    `
-	_, err := db.Exec(play_table_sql)
-	if err != nil {
-		fmt.Println("创建表失败:", err)
-	}
+func getRandomSongPicName(db *sql.DB) (string, string) {
+	var songPicName string
+	var songName string
+	getRandomSongPic := `SELECT music_pic_name,music_name
+	FROM mdsong
+	ORDER BY RANDOM()
+	LIMIT 1`
+	result := db.QueryRow(getRandomSongPic)
+	result.Scan(&songPicName, &songName)
+	return songPicName, songName
 }
 
-func insertMDData(db *sql.DB, musicData SongData) error {
-	fmt.Println(musicData)
-	queryMDData := `INSERT INTO 
-	mdsong (music_album,music_album_number,music_name,music_author,music_bpm,music_pic_name,music_scene_name,music_sheet_author,music_diff,music_diff_special) 
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	ON CONFLICT(music_album,music_album_number)
-	DO UPDATE SET music_name=excluded.music_name,music_author=excluded.music_author,
-	music_bpm=excluded.music_bpm,music_pic_name=excluded.music_pic_name,
-	music_scene_name=excluded.music_scene_name,music_sheet_author=excluded.music_sheet_author,
-	music_diff=excluded.music_diff,music_diff_special=excluded.music_diff_special`
-	statement, err := db.Prepare(queryMDData)
-	_, err = statement.Exec(musicData.musicAlbum, musicData.musicAlbumNumber, musicData.musicName, musicData.musicAuthor, musicData.musicBPM, musicData.musicPicName, musicData.musicSceneName, strings.Join(musicData.musicSheetAuthor, " | "), strings.Join(musicData.musicDiff, ","), musicData.musicSpecialDiff)
-	if err != nil {
-		return fmt.Errorf("failed to execute statement: %v", err)
+func getPossibleAnswer(db *sql.DB, answer string) []string {
+	var possibleAnswers []string
+	getPossibleAnswer := `SELECT music_name
+	FROM mdsong
+	WHERE music_name LIKE "%` + answer + `%"`
+	result, err := db.Query(getPossibleAnswer)
+
+	for result.Next() {
+		var name string
+		err = result.Scan(&name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		possibleAnswers = append(possibleAnswers, name)
 	}
-	return nil
+
+	return possibleAnswers
 }
