@@ -63,6 +63,6 @@ input {
   animation-fill-mode: forwards;
 }
 
-#pure-pic, #answer-pic, #possible-answer, #sub-title {
+#pure-pic, #answer-pic, #possible-answer, #sub-title ,#answer-song{
   display: none;
 }

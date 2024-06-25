@@ -11,7 +11,7 @@
     {{ if .Rotateb64 }}<div class="full-pic" id="pure-pic"><img src="data:image/png;base64,{{ .Rotateb64 }}"></div>{{ end }}
     {{ if .Answerb64 }}<div class="full-pic" id="answer-pic"><img src="data:image/png;base64,{{ .Answerb64 }}"></div>{{ end }}
     {{ if .Cuttedb64 }}<div class="cutted-pic" id="quest-pic"><img src="data:image/png;base64,{{ .Cuttedb64 }}"></div>{{ end }}
-    <div id="answer-song"></div>
+    <div id="answer-song">{{ .SongAnswerName }}</div>
     <div><input type="text" id="answer" name="input"></div>
     <div class="sub-title" id="possible-answer">你要提交的是不是</div>
     <div class="possible-area" id="possible-list">

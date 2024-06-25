@@ -1,4 +1,4 @@
-
+const standardAnswer = document.getElementById('answer-song');
 const userAnswer = document.getElementById('answer');
 
 const submitAnswer = document.getElementById('submit-answer');
@@ -15,7 +15,7 @@ submitAnswer.addEventListener('click', function() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ answer: answer })
+        body: JSON.stringify({ "answer": answer ,"standard-answer":standardAnswer.innerText})
       })
       .then(response => response.json())
       .then(data => {

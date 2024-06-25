@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	MiniGame "db/Minigame"
-	"db/SongCatcher"
 	"db/SongDataUpdater"
 	"encoding/base64"
 	"encoding/json"
@@ -37,7 +36,8 @@ var db = SongDataUpdater.DBConnector()
 
 func main() {
 
-	go SongCatcher.Catcher()
+	//SongDataUpdater.SongUpdater()
+	//go SongCatcher.Catcher()
 	http.HandleFunc("/css/style.css", ServeStaticFile("style.css", "css"))
 	http.HandleFunc("/js/index.js", ServeStaticFile("index.js", "js"))
 
@@ -71,13 +71,11 @@ func miniGameIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	miniGameData := generateMiniGameContent(false)
 
-	session, _ := store.Get(r, "minigame-middleware")
-	session.Values["AnswerName"] = miniGameData.SongAnswerName
-	session.Save(r, w)
 	t.Execute(w, MiniGameContent{
-		Rotateb64: miniGameData.Rotateb64,
-		Cuttedb64: miniGameData.Cuttedb64,
-		Answerb64: miniGameData.Answerb64})
+		Rotateb64:      miniGameData.Rotateb64,
+		Cuttedb64:      miniGameData.Cuttedb64,
+		Answerb64:      miniGameData.Answerb64,
+		SongAnswerName: miniGameData.SongAnswerName})
 }
 
 func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
@@ -95,9 +93,9 @@ func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	fmt.Println(requestData)
 	answer := requestData["answer"]
-	session, _ := store.Get(r, "minigame-middleware")
-	answerName := session.Values["AnswerName"].(string)
+	answerName := requestData["standard-answer"]
 
 	answerList := getPossibleAnswer(db, answer)
 
