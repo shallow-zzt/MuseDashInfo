@@ -1,61 +1,52 @@
 package main
 
 import (
-	"bytes"
-	"database/sql"
-	MiniGame "db/Minigame"
+	MDWebPageUtils "db/Shiori3WebUtils"
+	"db/SongCatcher"
 	"db/SongDataUpdater"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"image/png"
 	"io"
-	"log"
 	"net/http"
 	"path/filepath"
-
-	"github.com/gorilla/sessions"
+	"strconv"
+	"strings"
 )
 
-type MiniGameContent struct {
-	Rotateb64      string
-	Answerb64      string
-	Cuttedb64      string
-	SongAnswerName string
-}
-
-type MiniGameResult struct {
-	Result         int      `json:"result"`
-	ResultNum      int      `json:"result-num"`
-	PossibleResult []string `json:"possible-result"`
-}
-
-var store = sessions.NewCookieStore([]byte("^_^"))
 var db = SongDataUpdater.DBConnector()
 
 func main() {
 
-	//SongDataUpdater.SongUpdater()
-	//go SongCatcher.Catcher()
-	http.HandleFunc("/css/style.css", ServeStaticFile("style.css", "css"))
-	http.HandleFunc("/js/index.js", ServeStaticFile("index.js", "js"))
+	go SongCatcher.Catcher()
+
+	http.HandleFunc("/css/{anything}", ServeStaticFile("static/css", "css"))
+	http.HandleFunc("/js/{anything}", ServeStaticFile("static/js", "js"))
+	http.HandleFunc("/alias/pic/{anything}", ServeStaticFile("SongAssets/Songpic", "png"))
 
 	http.HandleFunc("/guessgame", miniGameIndex)
-	http.HandleFunc("/submit/answer", JudgeSubmit)
+	http.HandleFunc("/alias", songAliasIndex)
+	http.HandleFunc("/alias/{anything}", songAliasSettingIndex)
+
+	http.HandleFunc("/submit/guessgame/answer", guessGmaeJudgeSubmit)
+	http.HandleFunc("/submit/aliassong/alias", songAliasSubmit)
+
 	http.ListenAndServe(":8080", nil)
 
 }
 
-func ServeStaticFile(filename string, fileext string) http.HandlerFunc {
+func ServeStaticFile(basepath string, fileext string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if fileext == "js" {
-			w.Header().Set("Content-Type", "application/javascript")
-			http.ServeFile(w, r, filepath.Join("static/js", filename))
-		} else if fileext == "css" {
+		filename := strings.Split(r.URL.Path, "/")
+		switch fileext {
+		case "css":
 			w.Header().Set("Content-Type", "text/css")
-			http.ServeFile(w, r, filepath.Join("static/css", filename))
+		case "js":
+			w.Header().Set("Content-Type", "application/javascript")
+		case "png":
+			w.Header().Set("Content-Type", "image/png")
 		}
+		http.ServeFile(w, r, filepath.Join(basepath, filename[len(filename)-1]))
 	}
 }
 
@@ -64,28 +55,110 @@ func miniGameIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := template.ParseFiles("Static/index.html")
+	t, err := template.ParseFiles("Static/guessgame.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	miniGameData := generateMiniGameContent(false)
+	miniGameData := MDWebPageUtils.GenerateMiniGameContent(db, false)
 
-	t.Execute(w, MiniGameContent{
+	t.Execute(w, MDWebPageUtils.MiniGameContent{
 		Rotateb64:      miniGameData.Rotateb64,
 		Cuttedb64:      miniGameData.Cuttedb64,
 		Answerb64:      miniGameData.Answerb64,
 		SongAnswerName: miniGameData.SongAnswerName})
 }
 
-func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
+func songAliasIndex(w http.ResponseWriter, r *http.Request) {
+
+	t, err := template.ParseFiles("Static/alias.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	AllSongInfos := MDWebPageUtils.GetAllSongInfo(db)
+	t.Execute(w, AllSongInfos)
+}
+
+func songAliasSettingIndex(w http.ResponseWriter, r *http.Request) {
+
+	originURL := strings.Split(r.URL.Path, "/")
+	fullSongCode := strings.Split(originURL[len(originURL)-1], "-")
+	AlbumCode, err := strconv.Atoi(fullSongCode[0])
+	SongCode, err := strconv.Atoi(fullSongCode[1])
+
+	songAliasInfo := MDWebPageUtils.GetSongInfoFromCode(db, AlbumCode, SongCode).GetAlias()
+
+	t, err := template.ParseFiles("Static/alias-song.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if songAliasInfo.SongName == "" {
+		http.Error(w, "No Music Founded", http.StatusNotFound)
+		return
+	}
+
+	t.Execute(w, songAliasInfo)
+}
+
+func songAliasSubmit(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var submitContent map[string]string
+	var submitResult MDWebPageUtils.AliasSubmitResult
+
+	body, err := io.ReadAll(r.Body)
+	err = json.Unmarshal(body, &submitContent)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	fmt.Println(submitContent)
+
+	albumCode, err := strconv.Atoi(submitContent["album-code"])
+	songCode, err := strconv.Atoi(submitContent["song-code"])
+	inputAlias := submitContent["input-alias"]
+
+	if inputAlias == "" {
+		submitResult.Result = 2
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(submitResult)
+		return
+	}
+	if MDWebPageUtils.GetSongAliasIsUsed(db, inputAlias) {
+		submitResult.Result = 3
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(submitResult)
+		return
+	}
+
+	err = SongDataUpdater.InsertAliasData(db, SongDataUpdater.AliasBasicData{MusicAlbum: albumCode, MusicAlbumNumber: songCode, MusicAlias: inputAlias})
+	if err != nil {
+		submitResult.Result = 0
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(submitResult)
+		return
+	}
+
+	submitResult.Result = 1
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(submitResult)
+
+}
+
+func guessGmaeJudgeSubmit(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var requestData map[string]string
-	var MiniGameResult MiniGameResult
+	var MiniGameResult MDWebPageUtils.MiniGameResult
 
 	body, err := io.ReadAll(r.Body)
 	err = json.Unmarshal(body, &requestData)
@@ -97,9 +170,9 @@ func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
 	answer := requestData["answer"]
 	answerName := requestData["standard-answer"]
 
-	answerList := getPossibleAnswer(db, answer)
+	answerList := MDWebPageUtils.GetPossibleAnswer(db, answer)
 
-	if len(answerList) == 0 || len(answerList) >= 5 {
+	if len(answerList) == 0 || len(answerList) >= 6 {
 		MiniGameResult.Result = 0
 		MiniGameResult.ResultNum = 0
 		MiniGameResult.PossibleResult = nil
@@ -115,7 +188,7 @@ func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
 		} else {
 			MiniGameResult.Result = 2
 		}
-	} else if len(answerList) >= 2 && len(answerList) <= 4 {
+	} else if len(answerList) >= 2 && len(answerList) <= 5 {
 		MiniGameResult.Result = 2
 		MiniGameResult.ResultNum = len(answerList)
 		MiniGameResult.PossibleResult = answerList
@@ -124,60 +197,4 @@ func JudgeSubmit(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(MiniGameResult)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(MiniGameResult)
-}
-
-func generateMiniGameContent(isRotate bool) MiniGameContent {
-
-	songPicName, songAnswerName := getRandomSongPicName(db)
-	songPicPath := "SongAssets/Songpic/" + songPicName
-
-	rotatePic, answerPic, cuttedPic := MiniGame.ProductingSongPic(songPicPath, isRotate)
-
-	rotateBuf := new(bytes.Buffer)
-	answerBuf := new(bytes.Buffer)
-	cuttedBuf := new(bytes.Buffer)
-
-	err := png.Encode(rotateBuf, rotatePic)
-	err = png.Encode(answerBuf, answerPic)
-	err = png.Encode(cuttedBuf, cuttedPic)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	rotateb64 := base64.StdEncoding.EncodeToString(rotateBuf.Bytes())
-	answerb64 := base64.StdEncoding.EncodeToString(answerBuf.Bytes())
-	cuttedb64 := base64.StdEncoding.EncodeToString(cuttedBuf.Bytes())
-
-	return MiniGameContent{Rotateb64: rotateb64, Answerb64: answerb64, Cuttedb64: cuttedb64, SongAnswerName: songAnswerName}
-}
-
-func getRandomSongPicName(db *sql.DB) (string, string) {
-	var songPicName string
-	var songName string
-	getRandomSongPic := `SELECT music_pic_name,music_name
-	FROM mdsong
-	ORDER BY RANDOM()
-	LIMIT 1`
-	result := db.QueryRow(getRandomSongPic)
-	result.Scan(&songPicName, &songName)
-	return songPicName, songName
-}
-
-func getPossibleAnswer(db *sql.DB, answer string) []string {
-	var possibleAnswers []string
-	getPossibleAnswer := `SELECT music_name
-	FROM mdsong
-	WHERE music_name LIKE "%` + answer + `%"`
-	result, err := db.Query(getPossibleAnswer)
-
-	for result.Next() {
-		var name string
-		err = result.Scan(&name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		possibleAnswers = append(possibleAnswers, name)
-	}
-
-	return possibleAnswers
 }

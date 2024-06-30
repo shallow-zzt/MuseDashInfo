@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设置别名</title>
+  <link href="../css/alias-detail.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div id="song-name">{{ .SongName }}</div>
+    {{ if .SongPic }}<div class="full-pic" id="pure-pic"><img src="pic/{{.SongPic}}.png"></div>{{ end }}
+
+    <div><input type="text" id="user-alias" name="input"></div>
+    <div><div class="event-button" id="submit-alias">提交别名</div></div>
+    <div class="sub-title" id="submit-reminder"></div>
+    <div class="sub-title" id="alias-list-title">当前已有别名：{{ .SongAliasCount }}个 {{ if .SongAliasCount }}<a id="show-alias" onclick="">[展开]</a></div>{{end}}
+    <div id="alias-list">
+      {{ range .SongAliasList }}
+      {{ if . }}<div>{{ . }}</div>{{ end }}
+      {{ end }}
+    </div>
+    <div><div class="event-button" id="return-alias-list">返回曲目选择</div></div>
+  </div>
+  <script src="../js/alias-detail.js"></script>
+</body>
+</html>

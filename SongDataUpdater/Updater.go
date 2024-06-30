@@ -15,6 +15,12 @@ const (
 	ASSETS_PATH = "SongAssets/Json/"
 )
 
+type AliasBasicData struct {
+	MusicAlbum       int    `json:"album-code"`
+	MusicAlbumNumber int    `json:"song-code"`
+	MusicAlias       string `json:"input-alias"`
+}
+
 type AlbumData struct {
 	albumCode    string
 	albumNameCN  string
@@ -49,7 +55,7 @@ func DBConnector() *sql.DB {
 func SongUpdater() {
 
 	db := DBConnector()
-	createTable(db)
+	songTableInit(db)
 
 	albumDatas := getJsonRawFile("albums.json").([]interface{})
 	albumDatasCN := getJsonRawFile("albums_ChineseS.json").([]interface{})
@@ -116,6 +122,33 @@ func SongUpdater() {
 
 }
 
+func GetBasicAilas() {
+	db := DBConnector()
+	ailasTableInit(db)
+
+	aliasDatas := getJsonRawFile("music_search_tag.json").([]interface{})
+	for _, aliasData := range aliasDatas {
+		var aliasBasicData AliasBasicData
+		var err error
+		uid := strings.Split(aliasData.(map[string]interface{})["uid"].(string), "-")
+		tag := aliasData.(map[string]interface{})["tag"]
+		if tag != nil {
+			aliases := tag.([]interface{})
+			aliasBasicData.MusicAlbum, err = strconv.Atoi(uid[0])
+			aliasBasicData.MusicAlbumNumber, err = strconv.Atoi(uid[1])
+			for _, alias := range aliases {
+				aliasBasicData.MusicAlias = alias.(string)
+				fmt.Println(aliasBasicData)
+				InsertAliasData(db, aliasBasicData)
+			}
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+
+	}
+}
+
 func getJsonRawFile(filename string) interface{} {
 	var songRawData interface{}
 	data, err := ioutil.ReadFile(ASSETS_PATH + filename)
@@ -126,7 +159,23 @@ func getJsonRawFile(filename string) interface{} {
 	return songRawData
 }
 
-func createTable(db *sql.DB) {
+func ailasTableInit(db *sql.DB) {
+	play_table_sql := `
+	CREATE TABLE  IF NOT EXISTS mdalias(
+		music_album INTEGER NOT NULL,
+		music_album_number INTEGER NOT NULL,
+		music_alias TEXT,
+		PRIMARY KEY (music_album, music_album_number,music_alias)
+		FOREIGN KEY (music_album, music_album_number) REFERENCES mdsong(music_album, music_album_number)
+	);
+    `
+	_, err := db.Exec(play_table_sql)
+	if err != nil {
+		fmt.Println("创建表失败:", err)
+	}
+}
+
+func songTableInit(db *sql.DB) {
 	play_table_sql := `
 	CREATE TABLE  IF NOT EXISTS mdsong(
 		music_album INTEGER NOT NULL,
@@ -187,6 +236,18 @@ func insertAlbumData(db *sql.DB, AlbumData AlbumData) error {
 	music_album_name_KR=excluded.music_album_name_KR`
 	statement, err := db.Prepare(queryMDData)
 	_, err = statement.Exec(AlbumData.albumCode, AlbumData.albumNameCN, AlbumData.albumNameCNT, AlbumData.albumNameEN, AlbumData.albumNameJA, AlbumData.albumNameKR)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %v", err)
+	}
+	return nil
+}
+
+func InsertAliasData(db *sql.DB, aliasData AliasBasicData) error {
+	queryMDData := `INSERT INTO 
+	mdalias (music_album,music_album_number,music_alias) 
+	VALUES (?, ?, ?)`
+	statement, err := db.Prepare(queryMDData)
+	_, err = statement.Exec(aliasData.MusicAlbum, aliasData.MusicAlbumNumber, aliasData.MusicAlias)
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %v", err)
 	}

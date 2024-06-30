@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuseDash曲目别名收集区</title>
+    <link href="css/alias.css" rel="stylesheet">
+</head>
+<body>
+    <div class="title">MuseDash曲目别名收集区</div>
+    <div class="song-pic-list" id="song-table">
+        {{ range . }}
+            <div class="song-item" id="{{.AlbumCode}}-{{.SongCode}}">
+                <div class="song-name-area" id="{{.AlbumCode}}-{{.SongCode}}">别名数：{{.SongAliasCount}}</div>
+                <div class="song-pic-area" id="{{.AlbumCode}}-{{.SongCode}}"><img src="alias/pic/{{.SongPic}}.png" id="{{.AlbumCode}}-{{.SongCode}}"></div>
+                <div class="song-name-area" id="{{.AlbumCode}}-{{.SongCode}}">{{.SongName}}</div>
+            </div>
+        {{ end }}
+    </div>
+    <script src="js/alias.js"></script>
+</body>
+</html>

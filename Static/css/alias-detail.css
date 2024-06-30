@@ -1,0 +1,72 @@
+@keyframes button-pressed{
+    from{
+      background-color: #d2ebee;
+    }
+    to{
+      background-color: #d2ebee5e;
+    }
+  }
+  
+  
+  body {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+    
+  }
+  
+  .container {
+    justify-content: center;
+  }
+  
+  .container div{
+    max-width: 440px;
+    padding-bottom: 5px;
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  .full-pic {
+    width : 240px;
+    max-height: 440px;
+    margin: auto;
+  }
+  
+  .full-pic img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  
+  }
+  
+  input {
+    width: 260px;
+    height: 30px;
+    border: 3px solid #19adf1;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .event-button {
+    width : 260px;
+    height: 30px;
+    padding-top: 5px;
+    display: inline-block;
+    border: 3px solid #A8dadf;
+    border-radius: 5px;
+    font-size: 16px;
+    color: cornflowerblue;
+    background-color: #d2ebee;
+    cursor: pointer;
+  }
+  
+  .event-button:active{
+    animation: button-pressed 0.2s;
+    animation-fill-mode: forwards;
+  }
+
+  #alias-list{
+    display: none;
+  }
