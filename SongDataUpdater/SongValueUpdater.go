@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-var songNoteDensityIndex = [12]float64{0.9, 1.1, 1.2, 1.6, 2.0, 2.6, 2.8, 3.6, 4.5, 5.2, 6.4, 8.0}
-var songScoreDensityIndex = [12]float64{350, 500, 500, 800, 1100, 1400, 1800, 2300, 2700, 3300, 4300, 5500}
+var songNoteDensityIndex = [13]float64{0.0, 0.8, 1.2, 1.4, 1.5, 1.9, 2.3, 2.6, 3.2, 3.8, 4.4, 6.0, 8.4}
+var songScoreDensityIndex = [13]float64{0, 320, 450, 600, 800, 1100, 1300, 1700, 2000, 2500, 3000, 3500, 5500}
 var songLengthAvg = 135.0
 
 func getSongStaticValueData(db *sql.DB) []songValueCalcUnits {
@@ -56,10 +58,11 @@ func SongValueTableInit(db *sql.DB) {
 
 func CalStaticValue() {
 	rowDatas := getSongStaticValueData(DBConnector())
+	valueList := make([][]float64, 13)
 	for _, rowData := range rowDatas {
 		for i := 0; i <= 3; i++ {
 			songDiffBase, err := strconv.Atoi(rowData.SongDiff[i])
-			if songDiffBase == 0 {
+			if songDiffBase == 0 || err != nil {
 				continue
 			}
 
@@ -68,7 +71,22 @@ func CalStaticValue() {
 			if err != nil {
 				continue
 			}
-			fmt.Println(rowData.AlbumCode, "-", rowData.SongCode, "-", i, "难度", songDiffBase, "物量密度:", songNoteBase/rowData.SongLengthData, "分数密度:", songScoreBase/rowData.SongLengthData, "曲长:", rowData.SongLengthData)
+
+			songNoteIndex := max((songNoteBase/rowData.SongLengthData/songNoteDensityIndex[songDiffBase]-1.0)*2.5, 0)
+			songScoreIndex := max((songScoreBase/rowData.SongLengthData/songScoreDensityIndex[songDiffBase]-1.0)*1.5, 0)
+			songLengthIndex := rowData.SongLengthData/songLengthAvg - 1.0
+
+			songValue := math.Round((float64(songDiffBase)+min(max((songNoteIndex+songScoreIndex)/2, songLengthIndex), 0.9))*10) / 10
+			valueList[songDiffBase] = append(valueList[songDiffBase], songValue)
 		}
 	}
+}
+
+func outputCalData(valueList [][]float64) {
+	for i := 1; i <= 12; i++ {
+		sort.Slice(valueList[i], func(j, k int) bool {
+			return valueList[i][j] < valueList[i][k]
+		})
+	}
+	fmt.Println(valueList)
 }
