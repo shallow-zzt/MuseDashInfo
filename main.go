@@ -2,7 +2,6 @@ package main
 
 import (
 	MDWebPageUtils "db/Shiori3WebUtils"
-	"db/SongCatcher"
 	"db/SongDataUpdater"
 	"encoding/json"
 	"fmt"
@@ -18,7 +17,9 @@ var db = SongDataUpdater.DBConnector()
 
 func main() {
 
-	go SongCatcher.Catcher()
+	go func() {
+		SongDataUpdater.CalStaticValue()
+	}()
 
 	http.HandleFunc("/css/{anything}", ServeStaticFile("static/css", "css"))
 	http.HandleFunc("/js/{anything}", ServeStaticFile("static/js", "js"))

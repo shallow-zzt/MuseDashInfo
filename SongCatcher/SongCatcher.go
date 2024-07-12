@@ -40,7 +40,7 @@ func Catcher() {
 							t := time.After(1 * time.Second)
 							<-t
 						}
-						apiData, err := getAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
+						apiData, err := GetAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
 
 						mdStatus := apiData.(map[string]interface{})["total"]
 						fmt.Println(mdStatus)
@@ -81,7 +81,7 @@ func Catcher() {
 
 }
 
-func getAPIData(platform int, songAlbum int, songAlbumNumber int, songDiff int, offset int) (interface{}, error) {
+func GetAPIData(platform int, songAlbum int, songAlbumNumber int, songDiff int, offset int) (interface{}, error) {
 	var platformPrefix string
 	if platform == 0 {
 		platformPrefix = "pcleaderboard"
@@ -97,7 +97,6 @@ func getAPIData(platform int, songAlbum int, songAlbumNumber int, songDiff int, 
 	if err != nil {
 		return nil, err
 	}
-
 	return apiData, nil
 }
 
