@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiori3 MD定数总览</title>
+    <link href="css/value.css" rel="stylesheet">
+</head>
+<body>
+    <div class="title">Shiori3 MD定数总览</div>
+    <div class="song-pic-list" id="song-table">
+        {{ range . }}
+            <div class="song-item">
+                <div class="song-area">
+                    <div class="song-pic-area"><img src="alias/pic/{{.SongPic}}.png"></div>
+                    <div class="song-name-area">{{.SongName}}</div>
+                </div>
+                <div class="value-area">
+                    <div class="value-easy" {{if eq .SongValueEasy 0.0}}id="no-value"{{ end }}>{{if eq .SongValueEasy 0.0}}----{{else if eq .SongValueEasy -1.0}}？{{else}}{{.SongValueEasy}}{{ end }}</div>
+                    <div class="value-hard" {{if eq .SongValueHard 0.0}}id="no-value"{{ end }}>{{if eq .SongValueHard 0.0}}----{{else if eq .SongValueHard -1.0}}？{{else}}{{.SongValueHard}}{{ end }}</div>
+                    <div class="value-master" {{if eq .SongValueMaster 0.0}}id="no-value"{{ end }}>{{if eq .SongValueMaster 0.0}}----{{else if eq .SongValueMaster -1.0}}？{{else}}{{.SongValueMaster}}{{ end }}</div>
+                    <div class="value-hidden" {{if eq .SongValueHidden 0.0}}id="no-value"{{ end }}>{{if eq .SongValueHidden 0.0}}----{{else if eq .SongValueHidden -1.0}}？{{else}}{{.SongValueHidden}}{{ end }}</div>
+                </div>
+            </div>
+        {{ end }}
+    </div>
+</body>
+</html>

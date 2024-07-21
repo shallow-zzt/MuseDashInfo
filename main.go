@@ -17,9 +17,9 @@ var db = SongDataUpdater.DBConnector()
 
 func main() {
 
-	go func() {
-		SongDataUpdater.CalStaticValue()
-	}()
+	// go func() {
+	// 	SongCatcher.Catcher()
+	// }()
 
 	http.HandleFunc("/css/{anything}", ServeStaticFile("static/css", "css"))
 	http.HandleFunc("/js/{anything}", ServeStaticFile("static/js", "js"))
@@ -28,6 +28,8 @@ func main() {
 	http.HandleFunc("/guessgame", miniGameIndex)
 	http.HandleFunc("/alias", songAliasIndex)
 	http.HandleFunc("/alias/{anything}", songAliasSettingIndex)
+	http.HandleFunc("/value", songValueIndex)
+	http.HandleFunc("/rank/{anything}", songRankShowIndex)
 
 	http.HandleFunc("/submit/guessgame/answer", guessGmaeJudgeSubmit)
 	http.HandleFunc("/submit/aliassong/alias", songAliasSubmit)
@@ -150,6 +152,43 @@ func songAliasSubmit(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(submitResult)
 
+}
+
+func songValueIndex(w http.ResponseWriter, r *http.Request) {
+
+	t, err := template.ParseFiles("Static/value.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	allValueInfos := MDWebPageUtils.GetAllSongValueInfo(db)
+	t.Execute(w, allValueInfos)
+}
+
+func songRankShowIndex(w http.ResponseWriter, r *http.Request) {
+	originURL := strings.Split(r.URL.Path, "/")
+	fullSongCode := strings.Split(originURL[len(originURL)-1], "-")
+	AlbumCode, err := strconv.Atoi(fullSongCode[0])
+	SongCode, err := strconv.Atoi(fullSongCode[1])
+
+	diff, err := strconv.Atoi(r.URL.Query().Get("diff"))
+	if err != nil {
+		diff = 0
+	}
+	platform, err := strconv.Atoi(r.URL.Query().Get("platform"))
+	if err != nil {
+		platform = 0
+	}
+
+	t, err := template.ParseFiles("Static/rank-song.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rankData := SongDataUpdater.GetSongRankData(AlbumCode, SongCode, diff+1, platform)
+	t.Execute(w, rankData)
 }
 
 func guessGmaeJudgeSubmit(w http.ResponseWriter, r *http.Request) {

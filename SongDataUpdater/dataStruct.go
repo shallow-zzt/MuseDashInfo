@@ -38,3 +38,28 @@ type songValueCalcUnits struct {
 	SongNotes      []string
 	SongScore      []string
 }
+
+type songValueMap struct {
+	SongCode     int
+	AlbumCode    int
+	SongDiffTier int
+	SongValue    float64
+}
+
+type songRankData struct {
+	Rank       int
+	UserName   string
+	Score      int
+	Acc        float64
+	CharaElfin string
+}
+
+type songRankInfo struct {
+	SongCode     int
+	AlbumCode    int
+	SongName     string
+	SongPic      string
+	SongAuthor   string
+	SongDiff     []string
+	SongRankData []songRankData
+}

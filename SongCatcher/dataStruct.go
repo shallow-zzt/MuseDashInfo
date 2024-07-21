@@ -46,4 +46,5 @@ type MDdbData struct {
 	elfinId          int
 	playTime         string
 	nickname         string
+	rks              float64
 }

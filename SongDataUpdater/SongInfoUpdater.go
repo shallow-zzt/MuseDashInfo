@@ -3,6 +3,7 @@ package SongDataUpdater
 import (
 	"database/sql"
 	"db/SongCatcher"
+
 	"encoding/json"
 	"fmt"
 	"io/ioutil"

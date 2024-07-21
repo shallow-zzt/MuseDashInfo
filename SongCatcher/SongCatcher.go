@@ -21,6 +21,16 @@ const (
 	USER_TABLE       = "mduser"
 )
 
+// func calRKS(albumCode, songCode, diffTier, rank int, acc float64, enable bool) float64 {
+// 	if !enable {
+// 		return 0
+// 	}
+// 	baseValue := SongDataInterface.GetSongValueBySongDiff(albumCode, songCode, diffTier-1)
+// 	rankIndex := max(0, (800-float64(rank))*0.0001) + 1
+// 	rks := baseValue * acc * 0.01 * rankIndex
+// 	return rks
+// }
+
 func Catcher() {
 
 	db, err := sql.Open("sqlite3", DB_NAME)
@@ -43,7 +53,6 @@ func Catcher() {
 						apiData, err := GetAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
 
 						mdStatus := apiData.(map[string]interface{})["total"]
-						fmt.Println(mdStatus)
 						if mdStatus != nil && (mdStatus.(float64)) != 2000 {
 							break
 						}
@@ -67,6 +76,7 @@ func Catcher() {
 							dbData.elfinId, err = strconv.Atoi(playData["elfin_uid"].(string))
 							dbData.playTime = playData["updated_at"].(string)
 							dbData.nickname = userData["nickname"].(string)
+							dbData.rks = 0
 							fmt.Println(dbData.rank)
 							insertMDData(db, dbData)
 						}
@@ -116,6 +126,7 @@ func createTable(db *sql.DB) {
 			character_uid INTEGER,
 			elfin_uid INTEGER,
 			updated_at TEXT,
+			rks REAL,
 			PRIMARY KEY (platform, music_album_id,music_album_song_id, music_difficulty, rank)
         );
     `
@@ -134,18 +145,27 @@ func createTable(db *sql.DB) {
 
 func insertMDData(db *sql.DB, dbData MDdbData) error {
 	queryMDData := `INSERT INTO 
-	mdplay (platform, music_album_id,music_album_song_id,music_difficulty,rank,user_id,acc,miss,score,judge, character_uid,elfin_uid,updated_at) 
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	mdplay (platform, music_album_id,music_album_song_id,music_difficulty,rank,user_id,acc,miss,score,judge, character_uid,elfin_uid,updated_at,rks) 
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	ON CONFLICT(platform, music_album_id,music_album_song_id,music_difficulty,rank)
-	DO UPDATE SET user_id=excluded.user_id,acc=excluded.acc,miss=excluded.miss,score=excluded.score,judge=excluded.judge,character_uid=excluded.character_uid,elfin_uid=excluded.elfin_uid,updated_at=excluded.updated_at`
+	DO UPDATE SET user_id=excluded.user_id,acc=excluded.acc,miss=excluded.miss,score=excluded.score,judge=excluded.judge,character_uid=excluded.character_uid,elfin_uid=excluded.elfin_uid,updated_at=excluded.updated_at,rks=excluded.rks`
 	queryUser := `INSERT OR REPLACE INTO 
 	mduser (user_id,nickname) 
 	VALUES (?, ?)
 	ON CONFLICT(user_id)
 	DO UPDATE SET nickname=excluded.nickname`
 	statement, err := db.Prepare(queryMDData)
-	_, err = statement.Exec(dbData.platform, dbData.musicAlbum, dbData.musicAlbumNumber, dbData.musicDiff, dbData.rank, dbData.userId, dbData.acc, dbData.miss, dbData.score, dbData.judge, dbData.characterId, dbData.elfinId, dbData.playTime)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %v", err)
+	}
+	_, err = statement.Exec(dbData.platform, dbData.musicAlbum, dbData.musicAlbumNumber, dbData.musicDiff, dbData.rank, dbData.userId, dbData.acc, dbData.miss, dbData.score, dbData.judge, dbData.characterId, dbData.elfinId, dbData.playTime, dbData.rks)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %v", err)
+	}
 	statement, err = db.Prepare(queryUser)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %v", err)
+	}
 	_, err = statement.Exec(dbData.userId, dbData.nickname)
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %v", err)

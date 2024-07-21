@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排行榜</title>
+    <link href="../../css/rank-song.css" rel="stylesheet">
+</head>
+<body>
+    <div class="title">排行榜</div>
+    <div class="song-area">
+        <div class="song-pic-area"><img src="../alias/pic/{{.SongPic}}.png"></div>
+        <div class="song-info-area">
+            <div class="song-name-area">{{.SongName}}</div>
+            <div class="song-author-area">{{ .SongAuthor }}</div>
+        </div>
+    </div>
+
+    <div class="select-bar-area" id="diff-area">
+        {{if ne (index .SongDiff 0) "0"}}<div class="select-bar" id="easy">萌新 {{index .SongDiff 0}}</div>{{ end }}
+        {{if ne (index .SongDiff 1) "0"}}<div class="select-bar" id="hard">高手 {{index .SongDiff 1}}</div>{{ end }}
+        {{if ne (index .SongDiff 2) "0"}}<div class="select-bar" id="master">大触 {{index .SongDiff 2}}</div>{{ end }}
+        {{if ne (index .SongDiff 3) "0"}}<div class="select-bar" id="hidden">里谱 {{index .SongDiff 3}}</div>{{ end }}
+    </div>
+    <div class="select-bar-area" id="platform-area">
+        <div class="select-bar"id="pc">PC端</div>
+        <div class="select-bar"id="mobile">移动端</div>
+    </div>
+    <div class="rank-table">
+        {{if .SongRankData}}
+        <table>
+            <thead>
+            <tr>
+                <th>位次</th>
+                <th>用户名</th>
+                <th>分数</th>
+                <th>Acc</th>
+                <th>配置</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ range .SongRankData }}
+            <tr>
+                <td>{{ .Rank }}</td>
+                <td>{{ .UserName }}</td>
+                <td>{{ .Score }}</td>
+                <td>{{ .Acc }}</td>
+                <td>{{ .CharaElfin }}</td>
+            </tr>
+            {{ end }}
+            </tbody>
+        </table>
+        {{ else }}
+        暂无数据
+        {{ end }}
+    </div>
+
+</body>
+<footer>
+    
+</footer>
+</html>

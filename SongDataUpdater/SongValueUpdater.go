@@ -25,7 +25,7 @@ ON ms.music_album = ml.music_album AND ms.music_album_number = ml.music_album_nu
 	for result.Next() {
 		var songValueCalBase songValueCalcUnits
 		dataBuf := make([]string, 3)
-		err = result.Scan(&songValueCalBase.AlbumCode, &songValueCalBase.SongCode, &dataBuf[0], &dataBuf[1], &dataBuf[2], &songValueCalBase.SongLengthData)
+		err = result.Scan(&songValueCalBase.SongCode, &songValueCalBase.AlbumCode, &dataBuf[0], &dataBuf[1], &dataBuf[2], &songValueCalBase.SongLengthData)
 		songValueCalBase.SongDiff = strings.Split(dataBuf[0], ",")
 		songValueCalBase.SongNotes = strings.Split(dataBuf[1], ",")
 		songValueCalBase.SongScore = strings.Split(dataBuf[2], ",")
@@ -42,11 +42,9 @@ func SongValueTableInit(db *sql.DB) {
 	CREATE TABLE  IF NOT EXISTS mdvalue(
 		music_album INTEGER NOT NULL,
 		music_album_number INTEGER NOT NULL,
-		music_value_easy REAL,
-		music_value_hard REAL,
-		music_value_master REAL,
-		music_value_hidden REAL,
-		PRIMARY KEY (music_album, music_album_number)
+		music_diff_tier INTEGER NOT NULL,
+		music_value REAL,
+		PRIMARY KEY (music_album, music_album_number,music_diff_tier)
 		FOREIGN KEY (music_album, music_album_number) REFERENCES mdsong(music_album, music_album_number)
 	);
     `
@@ -56,19 +54,42 @@ func SongValueTableInit(db *sql.DB) {
 	}
 }
 
-func CalStaticValue() {
+func insertValueData(db *sql.DB, valueMap songValueMap) error {
+	queryMDData := `INSERT INTO 
+	mdvalue (music_album,music_album_number,music_diff_tier,music_value) 
+	VALUES (?, ?, ?, ?)
+	ON CONFLICT(music_album,music_album_number,music_diff_tier)
+	DO UPDATE SET music_value=excluded.music_value`
+	statement, err := db.Prepare(queryMDData)
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = statement.Exec(valueMap.AlbumCode, valueMap.SongCode, valueMap.SongDiffTier, valueMap.SongValue)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %v", err)
+	}
+	return nil
+}
+
+func CalStaticValue(outputData bool) {
 	rowDatas := getSongStaticValueData(DBConnector())
 	valueList := make([][]float64, 13)
 	for _, rowData := range rowDatas {
 		for i := 0; i <= 3; i++ {
 			songDiffBase, err := strconv.Atoi(rowData.SongDiff[i])
-			if songDiffBase == 0 || err != nil {
+			if err != nil {
+				insertValueData(DBConnector(), songValueMap{rowData.AlbumCode, rowData.SongCode, i, -1})
+				continue
+			}
+			if songDiffBase == 0 {
+				insertValueData(DBConnector(), songValueMap{rowData.AlbumCode, rowData.SongCode, i, 0})
 				continue
 			}
 
 			songNoteBase, err := strconv.ParseFloat(rowData.SongNotes[i], 64)
 			songScoreBase, err := strconv.ParseFloat(rowData.SongScore[i], 64)
 			if err != nil {
+				insertValueData(DBConnector(), songValueMap{rowData.AlbumCode, rowData.SongCode, i, 0})
 				continue
 			}
 
@@ -77,8 +98,14 @@ func CalStaticValue() {
 			songLengthIndex := rowData.SongLengthData/songLengthAvg - 1.0
 
 			songValue := math.Round((float64(songDiffBase)+min(max((songNoteIndex+songScoreIndex)/2, songLengthIndex), 0.9))*10) / 10
+
+			insertValueData(DBConnector(), songValueMap{rowData.AlbumCode, rowData.SongCode, i, songValue})
 			valueList[songDiffBase] = append(valueList[songDiffBase], songValue)
 		}
+	}
+
+	if outputData {
+		outputCalData(valueList)
 	}
 }
 
@@ -88,5 +115,13 @@ func outputCalData(valueList [][]float64) {
 			return valueList[i][j] < valueList[i][k]
 		})
 	}
-	fmt.Println(valueList)
+	fmt.Println(valueList[1:])
+}
+
+func GetSongValueBySongDiff(db *sql.DB, albumCode, songCode, diffTier int) float64 {
+	var songValue float64
+	getSQLValueNum := `SELECT music_value FROM mdvalue WHERE music_album=? AND music_album_number=? AND music_diff_tier=?`
+	result := db.QueryRow(getSQLValueNum, albumCode, songCode, diffTier)
+	result.Scan(&songValue)
+	return songValue
 }
