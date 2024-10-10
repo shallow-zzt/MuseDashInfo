@@ -6,12 +6,12 @@ body {
 
 .title{
     width: 100%;
-  font-size: 40px;
+    font-size: 40px;
     text-align: center;
 }
 
 .song-area{
-    width: 95%;
+    width: 100%;
     min-height: 260px;
     display: flex;
     margin-top: 5px;
@@ -20,7 +20,8 @@ body {
 
 .song-pic-area {
     width: 20%;
-    max-height: 240px;
+    min-width: 240px;
+    height: 240px;
     overflow: hidden;
 }
 
@@ -31,6 +32,7 @@ body {
 }
 
 .song-info-area{
+    min-width:960px;
     width: 80%;
     margin-top: 30px;
 }
@@ -41,13 +43,18 @@ body {
     margin:5px;
 }
 
+.song-author-area{
+    min-height: 20px;
+    font-size: 14px;
+    margin:5px;
+    color: #666666;
+}
+
 .select-bar-area{
     width: 100%;
     display: flex;
     margin-bottom: 10px;
 }
-
-
 
 .select-bar{
     flex: 1;
@@ -60,11 +67,34 @@ body {
     box-shadow: 3px 3px 6px 3px #cccccc;
 }
 
-.song-author-area{
-    min-height: 20px;
-    font-size: 14px;
-    margin:5px;
-    color: #666666;
+#easy:hover{
+    color: white;
+    background-color:#12af47;
+}
+
+#hard:hover{
+    color: white;
+    background-color: #1aacac;
+}
+
+#master:hover{
+    color: white;
+    background-color: #8b28bd;
+}
+
+#hidden:hover{
+    color: white;
+    background-color: #463d83;
+}
+
+#pc:hover{
+    color: white;
+    background-color: #c2b503;
+}
+
+#mobile:hover{
+    color: white;
+    background-color: #c2b503;
 }
 
 table {
@@ -108,4 +138,134 @@ th:nth-child(4), td:nth-child(4) {
 
 th:nth-child(5), td:nth-child(5) {
     width: 25%;
+}
+
+footer{
+    min-height: 200px;
+}
+
+@media screen and (max-width: 1350px) {
+    .song-area{
+        width: 100%;
+        min-height: 220px;
+        display: flex;
+        margin-top: 5px;
+        padding: 5px;
+    }
+    .song-pic-area {
+        width: 20%;
+        min-width: 200px;
+        height: 200px;
+        overflow: hidden;
+    }
+    .song-info-area{
+        min-width:800px;
+        width: 80%;
+        margin-top: 25px;
+    }
+
+}
+
+@media screen and (max-width: 1080px) {
+    .song-area{
+        width: 100%;
+        min-height: 170px;
+        display: flex;
+        margin-top: 5px;
+        padding: 5px;
+    }
+    .song-pic-area {
+        width: 25%;
+        min-width: 160px;
+        height: 160px;
+        overflow: hidden;
+    }
+    .song-info-area{
+        min-width:480px;
+        width: 75%;
+        margin-top: 15px;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .song-area{
+        width: 100%;
+        min-height: 130px;
+        display: flex;
+        margin-top: 5px;
+        padding: 5px;
+    }
+    .song-pic-area {
+        width: 25%;
+        min-width: 120px;
+        height: 120px;
+        overflow: hidden;
+    }
+    .song-info-area{
+        min-width:360px;
+        width: 75%;
+        margin-top: 15px;
+    }
+    th:nth-child(2), td:nth-child(2) {
+        width: 40%;
+        max-width: 120px;
+    }
+    .select-bar{
+        flex: 1;
+        margin:2px;
+        padding-top: 2px;
+        height:25px;
+        border-radius: 8px;
+        font-size: 15px;
+        text-align: center;
+        box-shadow: 3px 3px 6px 3px #cccccc;
+    }
+}
+
+@media screen and (max-width: 500px) {
+
+    .song-area{
+        width: 100%;
+        min-height: 100px;
+        display: flex;
+        margin-top: 2px;
+        padding: 2px;
+    }
+    .song-pic-area {
+        width: 25%;
+        min-width: 90px;
+        height: 120px;
+        overflow: hidden;
+    }
+    .song-info-area{
+        min-width:270px;
+        width: 75%;
+        margin-top: 15px;
+    }
+    .song-name-area{
+        min-height: 22px;
+        font-size: 20px;
+        margin:2px;
+    }
+    
+    .song-author-area{
+        min-height: 15px;
+        font-size: 10px;
+        margin:2px;
+        color: #666666;
+    }
+    th:nth-child(2), td:nth-child(2) {
+        width: 40%;
+        max-width: 120px;
+    }
+    .select-bar{
+        flex: 1;
+        margin:2px;
+        padding-top: 2px;
+        height:25px;
+        border-radius: 8px;
+        font-size: 15px;
+        text-align: center;
+        box-shadow: 3px 3px 6px 3px #cccccc;
+    }
 }

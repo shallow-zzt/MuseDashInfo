@@ -1,6 +1,9 @@
 package SongDataUpdater
 
-import "strings"
+import (
+	"math"
+	"strings"
+)
 
 func charaElfinNameConvert(code int, codeType int) string {
 	charaNameMap := []string{"贝斯手", "问题少女", "梦游少女", "兔女郎", "飞行员", "偶像", "僵尸少女", "华服小丑", "提琴少女", "女仆", "魔法少女", "小恶魔", "黑衣少女", "圣诞礼物", "制服少女", "领航员", "游戏主播", "打工战士", "博丽灵梦", "重生的少女", "修女", "雾雨魔理沙", "阿米娅", "拳击手", "道士", "初音未来", "镜音铃·连", "摩托车手"}
@@ -40,6 +43,7 @@ func GetSongRankData(albumCode, songCode, diffTier, platform int) songRankInfo {
 		var userNameBuf string
 		var charaBuf, elfinBuf int
 		RankInfoResult.Scan(&songRankData.Rank, &userNameBuf, &songRankData.Score, &songRankData.Acc, &charaBuf, &elfinBuf)
+		songRankData.Acc = math.Round(songRankData.Acc*100) / 100
 		getUserNameCode := `SELECT nickname FROM mduser WHERE user_id=?`
 		getUserNameResult := rankDB.QueryRow(getUserNameCode, userNameBuf)
 		getUserNameResult.Scan(&songRankData.UserName)

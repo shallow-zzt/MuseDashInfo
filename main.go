@@ -2,6 +2,7 @@ package main
 
 import (
 	MDWebPageUtils "db/Shiori3WebUtils"
+	"db/SongCatcher"
 	"db/SongDataUpdater"
 	"encoding/json"
 	"fmt"
@@ -17,9 +18,9 @@ var db = SongDataUpdater.DBConnector()
 
 func main() {
 
-	// go func() {
-	// 	SongCatcher.Catcher()
-	// }()
+	go func() {
+		SongCatcher.Catcher()
+	}()
 
 	http.HandleFunc("/css/{anything}", ServeStaticFile("static/css", "css"))
 	http.HandleFunc("/js/{anything}", ServeStaticFile("static/js", "js"))
@@ -161,8 +162,14 @@ func songValueIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	allValueInfos := MDWebPageUtils.GetAllSongValueInfo(db)
+	var allValueInfos []MDWebPageUtils.FullSongValueInfo
+	query := r.URL.Query()
+	useOriginDiff := query.Get("originDiff")
+	if useOriginDiff == "1" {
+		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db, 1)
+	} else {
+		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db)
+	}
 	t.Execute(w, allValueInfos)
 }
 

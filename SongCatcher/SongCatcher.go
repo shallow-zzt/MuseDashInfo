@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3" // Use SQLite driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
@@ -21,15 +21,36 @@ const (
 	USER_TABLE       = "mduser"
 )
 
-// func calRKS(albumCode, songCode, diffTier, rank int, acc float64, enable bool) float64 {
-// 	if !enable {
-// 		return 0
-// 	}
-// 	baseValue := SongDataInterface.GetSongValueBySongDiff(albumCode, songCode, diffTier-1)
-// 	rankIndex := max(0, (800-float64(rank))*0.0001) + 1
-// 	rks := baseValue * acc * 0.01 * rankIndex
-// 	return rks
-// }
+func DBConnector(filepath ...string) *sql.DB {
+	var SQLpath string
+	if len(filepath) == 0 {
+		SQLpath = "mdsong.db"
+	} else {
+		SQLpath = filepath[0]
+	}
+	db, err := sql.Open("sqlite3", SQLpath)
+	if err != nil {
+		fmt.Println("连接数据库失败:", err)
+		return nil
+	}
+	return db
+}
+
+func GetSongValue(db *sql.DB, musicAlbum int, musicAlbumNumber int, musicDiff int) float64 {
+	var songValue float64
+	SQLCode := `SELECT music_value FROM mdvalue WHERE music_album = ? AND music_album_number = ? AND music_diff_tier = ?`
+	result := db.QueryRow(SQLCode, musicAlbum, musicAlbumNumber, musicDiff-1)
+	result.Scan(&songValue)
+	return songValue
+}
+
+func calRks(acc float64, rank int, musicAlbum int, musicAlbumNumber int, musicDiff int) float64 {
+	db := DBConnector()
+	songRKS := GetSongValue(db, musicAlbum, musicAlbumNumber, musicDiff)
+	defer db.Close()
+	index := float64(1001-rank)/1000*0.04 + 1
+	return acc * index * songRKS / 100
+}
 
 func Catcher() {
 
@@ -41,27 +62,32 @@ func Catcher() {
 	defer db.Close()
 	createTable(db)
 
-	for songAlbum := 0; songAlbum <= MAX_ALBUM; songAlbum++ {
+	for songAlbum := 68; songAlbum <= MAX_ALBUM; songAlbum++ {
 		for songAlbumNumber := 0; songAlbumNumber <= MAX_ALBUM; songAlbumNumber++ {
+			fmt.Println(songAlbum, songAlbumNumber)
 			for songDiff := 1; songDiff <= MAX_DIFF; songDiff++ {
 				for platform := 0; platform <= 1; platform++ {
 					for offset := 0; offset <= 17; offset++ {
-						if offset%5 == 0 {
+						apiData, err := GetAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
+						if err != nil {
+							continue
+						}
+						if offset%2 == 0 {
 							t := time.After(1 * time.Second)
 							<-t
 						}
-						apiData, err := GetAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
-
 						mdStatus := apiData.(map[string]interface{})["total"]
-						if mdStatus != nil && (mdStatus.(float64)) != 2000 {
+						fmt.Println(mdStatus)
+						if mdStatus == nil || (mdStatus.(float64)) != 2000 {
+							songAlbumNumber = MAX_ALBUM
 							break
 						}
+
 						mdDatas := apiData.(map[string]interface{})["result"].([]interface{})
 						for rankOffset, mdData := range mdDatas {
 							var dbData MDdbData
 							playData := mdData.(map[string]interface{})["play"].(map[string]interface{})
 							userData := mdData.(map[string]interface{})["user"].(map[string]interface{})
-							fmt.Println(playData)
 							dbData.platform = platform
 							dbData.musicAlbum = songAlbum
 							dbData.musicAlbumNumber = songAlbumNumber
@@ -76,13 +102,18 @@ func Catcher() {
 							dbData.elfinId, err = strconv.Atoi(playData["elfin_uid"].(string))
 							dbData.playTime = playData["updated_at"].(string)
 							dbData.nickname = userData["nickname"].(string)
-							dbData.rks = 0
-							fmt.Println(dbData.rank)
-							insertMDData(db, dbData)
+							dbData.rks = calRks(dbData.acc, dbData.rank, dbData.musicAlbum, dbData.musicAlbumNumber, dbData.musicDiff)
+							// dbData.rks = 0
+							fmt.Println(dbData)
+							err := insertMDData(db, dbData)
+							if err != nil {
+								fmt.Println("数据插入失败", err)
+							}
 						}
 						if err != nil {
 							fmt.Println("获取API数据失败:", err)
 						}
+
 					}
 				}
 			}
@@ -144,6 +175,7 @@ func createTable(db *sql.DB) {
 }
 
 func insertMDData(db *sql.DB, dbData MDdbData) error {
+	db.Exec("PRAGMA journal_mode=WAL;")
 	queryMDData := `INSERT INTO 
 	mdplay (platform, music_album_id,music_album_song_id,music_difficulty,rank,user_id,acc,miss,score,judge, character_uid,elfin_uid,updated_at,rks) 
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -158,6 +190,7 @@ func insertMDData(db *sql.DB, dbData MDdbData) error {
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %v", err)
 	}
+	defer statement.Close()
 	_, err = statement.Exec(dbData.platform, dbData.musicAlbum, dbData.musicAlbumNumber, dbData.musicDiff, dbData.rank, dbData.userId, dbData.acc, dbData.miss, dbData.score, dbData.judge, dbData.characterId, dbData.elfinId, dbData.playTime, dbData.rks)
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %v", err)
@@ -166,6 +199,7 @@ func insertMDData(db *sql.DB, dbData MDdbData) error {
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %v", err)
 	}
+	defer statement.Close()
 	_, err = statement.Exec(dbData.userId, dbData.nickname)
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %v", err)

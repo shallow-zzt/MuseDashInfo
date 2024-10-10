@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuseDash曲目一览</title>
+    <link href="css/rank.css" rel="stylesheet">
+</hsead>
+<body>
+    <div class="title">MuseDash曲目一览</div>
+    <div class="song-pic-lsist" id="song-table">
+        {{ range . }}
+            <div class="song-item" id="{{.AlbumCode}}-{{.SongCode}}">
+                <div class="song-area">
+                    <div class="song-pic-area"><img src="alias/pic/{{.SongPic}}.png"></div>
+                    <div class="song-info-area">
+                        <div class="song-name-area">{{.SongName}}</div>
+                        <div class="song-author-area">{{ .SongAuthor }}</div>
+                        <div class="value-area">
+                            <div class="value-easy" {{if eq (index .SongDiff 0) "0" }} id="no-value" {{ end }}>{{if eq (index .SongDiff 0) "0" }}×{{else}}{{index .SongDiff 0}}{{ end }}</div>
+                            <div class="value-hard" {{if eq (index .SongDiff 1) "0" }} id="no-value"{{ end }}>{{if eq (index .SongDiff 1) "0" }}×{{else}}{{index .SongDiff 1}}{{ end }}</div>
+                            <div class="value-master" {{if eq (index .SongDiff 2) "0" }} id="no-value"{{ end }}>{{if eq (index .SongDiff 2) "0" }}×{{else}}{{index .SongDiff 2}}{{ end }}</div>
+                            {{if ne (index .SongDiff 3) "0" }}<div class="value-hidden">{{if eq (index .SongDiff 3) "0" }}×{{else}}{{index .SongDiff 3}}{{ end }}</div>{{ end }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+    </div>
+</body>
+</html>

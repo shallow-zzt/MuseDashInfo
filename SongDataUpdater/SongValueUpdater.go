@@ -125,3 +125,13 @@ func GetSongValueBySongDiff(db *sql.DB, albumCode, songCode, diffTier int) float
 	result.Scan(&songValue)
 	return songValue
 }
+
+func calRKS(db *sql.DB, albumCode, songCode, diffTier, rank int, acc float64, enable bool) float64 {
+	if !enable {
+		return 0
+	}
+	baseValue := GetSongValueBySongDiff(db, albumCode, songCode, diffTier-1)
+	rankIndex := max(0, (800-float64(rank))*0.0001) + 1
+	rks := baseValue * acc * 0.01 * rankIndex
+	return rks
+}

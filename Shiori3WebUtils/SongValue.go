@@ -3,6 +3,7 @@ package MDWebPageUtils
 import (
 	"database/sql"
 	"log"
+	"math"
 )
 
 type FullSongValueInfo struct {
@@ -17,7 +18,7 @@ type FullSongValueInfo struct {
 	SongValueHidden float64
 }
 
-func GetAllSongValueInfo(db *sql.DB) []FullSongValueInfo {
+func GetAllSongValueInfo(db *sql.DB, diffMode ...int) []FullSongValueInfo {
 	var valueInfos []FullSongValueInfo
 	SQLCode := `SELECT music_album,music_album_number,music_pic_name,music_name FROM mdsong`
 	result, err := db.Query(SQLCode)
@@ -36,6 +37,9 @@ func GetAllSongValueInfo(db *sql.DB) []FullSongValueInfo {
 		counter := 0
 		for result2.Next() {
 			result2.Scan(valueAddress[counter])
+			if len(diffMode) != 0 && diffMode[0] == 1 {
+				*valueAddress[counter] = math.Floor(*valueAddress[counter])
+			}
 			counter += 1
 		}
 		valueInfos = append(valueInfos, valueInfo)
