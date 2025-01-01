@@ -48,6 +48,7 @@ type songValueMap struct {
 
 type songRankData struct {
 	Rank       int
+	UserId     string
 	UserName   string
 	Score      int
 	Acc        float64

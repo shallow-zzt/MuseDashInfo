@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuseDash用户搜索</title>
+    <link href="css/usersearch.css" rel="stylesheet">
+</head>
+<body>
+    <div class="searchbox">
+        <input type="text" id="user-search-content" name="input">
+        <div class="search-button">搜索</div>
+      </div>
+      <div class="divider"></div>
+      {{if ne .UserNum 0}}
+      <div class="result-title" id="result-title">搜索结果</div>
+      {{ end }}
+      {{if lt .UserNum 0}}
+      <div class="result-tip">
+        <div class="result-tip-pic"></div>
+        <div class="result-title">什么也没有捏~</div>  
+      </div>
+      {{ end }}
+      {{if gt .UserNum 0}}
+      <div class="user-result-list">
+        {{ range .SearchDetails }}
+        <div class="userdata-title">
+        <div class="userdata-content">
+            <div class="username">{{.UserName}}</div>
+            <div class="userid">{{.UserId}}</div>  
+        </div>
+        <div class="vertical-divider"></div>
+        <div class="userdata-rks">
+            <div class="rks-title">RKS</div>
+            <div class="rks-value">{{.UserRKS}}</div>      
+        </div>
+      </div>
+      {{ end }}
+      </div>
+      {{ end }}
+</body>
+</html>

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3" // Use SQLite driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (

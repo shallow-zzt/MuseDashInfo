@@ -7,7 +7,6 @@ import (
 )
 
 type FullSongValueInfo struct {
-	db              *sql.DB
 	AlbumCode       int
 	SongCode        int
 	SongPic         string

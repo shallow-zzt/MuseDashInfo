@@ -2,7 +2,6 @@ package main
 
 import (
 	MDWebPageUtils "db/Shiori3WebUtils"
-	"db/SongCatcher"
 	"db/SongDataUpdater"
 	"encoding/json"
 	"fmt"
@@ -15,11 +14,12 @@ import (
 )
 
 var db = SongDataUpdater.DBConnector()
+var rankdb = SongDataUpdater.DBConnector("MDRankData.db")
 
 func main() {
 
 	go func() {
-		SongCatcher.Catcher()
+		//SongCatcher.Catcher()
 	}()
 
 	http.HandleFunc("/css/{anything}", ServeStaticFile("static/css", "css"))
@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/alias/{anything}", songAliasSettingIndex)
 	http.HandleFunc("/value", songValueIndex)
 	http.HandleFunc("/rank/{anything}", songRankShowIndex)
+	http.HandleFunc("/user/{anything}", songUserData)
 
 	http.HandleFunc("/submit/guessgame/answer", guessGmaeJudgeSubmit)
 	http.HandleFunc("/submit/aliassong/alias", songAliasSubmit)
@@ -83,6 +84,20 @@ func songAliasIndex(w http.ResponseWriter, r *http.Request) {
 
 	AllSongInfos := MDWebPageUtils.GetAllSongInfo(db)
 	t.Execute(w, AllSongInfos)
+}
+
+func songUserData(w http.ResponseWriter, r *http.Request) {
+
+	originURL := strings.Split(r.URL.Path, "/")
+	userId := originURL[len(originURL)-1]
+
+	t, err := template.ParseFiles("Static/userb50.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	songUserDataList := MDWebPageUtils.GetUserSongList(rankdb, db, userId, 200, 0)
+	t.Execute(w, songUserDataList)
 }
 
 func songAliasSettingIndex(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,184 @@
+.userdata-title{
+  width: 80%;
+  margin: 30px 5px 0px 5px;
+  display:flex;
+}
+.userdata-content{
+  width:280px;
+  height:100px;
+  display:grid;
+  border: 3px dashed #66CCFF;
+  background-color:#d2ebee;
+}
+.userdata-rks{
+  width:80px;
+  height:100px;
+  display:grid;
+  margin:0px 0px 0px 10px;
+  border: 3px dashed #66CCFF;
+  background-color:#d2ebee;
+}
+.username{
+  min-height: 30px;
+  font-size: 25px;
+  margin:5px;
+  word-break: break-all;
+}
+.userid{
+  min-height: 20px;
+  font-size: 14px;
+  margin:5px;
+  color: #666666;
+}
+.rks-value{
+  min-height: 30px;
+  font-size: 25px;
+  margin:5px;
+}
+.rks-title{
+  min-height: 20px;
+  font-size: 18px;
+  margin:2px;
+  color: #333333;
+}
+.divider{
+  margin:5px;
+  border:3px solid #666666;
+}
+.song-pic-list {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+}
+.song-data-frame {
+    width: 165px;
+    height: 130px;
+    display: grid;
+    background-color: #eeeeee;
+    border-radius:10px;
+    box-shadow:3px 3px 6px 0px rgba(0, 0, 0, 0.5);
+    margin:6px;
+}
+.song-value-area{
+  width:calc(100% - 15px);
+  height:20px;
+  color:white;
+  background-color:#8b28bd;
+  font-size:14px;
+  display:grid;
+  justify-content:center;
+  border-radius:10px 10px 0px 0px;
+}
+.song-data-area{
+  width:calc(100% - 15px);
+  height:90px;
+  display: flex;
+}
+.song-pic-area{
+  position: relative;
+  width:70px;
+  height:70px;
+  margin:6px 2px 8px 8px;
+}
+.song-pic-area img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.song-diff-area{
+  position:absolute;
+  top: 0; 
+  left: 0;
+  width:25px;
+  height:25px;
+  color:white;
+  display:grid;
+  justify-content:center;
+  background-color:#8b28bd;
+  border-radius:8px;
+}
+.song-detail-area{
+  width:100px;
+  display:grid;
+}
+.song-detail-area{
+  width:100px;
+  display:grid;
+}
+.song-name-area{
+  width:100%;
+  max-height:20px;
+  font-size:14px;
+  word-break: break-all;
+}
+.song-parameter-area{
+  display:flex;
+  width:100%;
+  height:80px;
+}
+.song-parameter-left{
+  width:85px;
+  display:grid;
+}
+.song-acc-area{
+  width:100%;
+  height:30px;
+  display:flex;
+  justify-content:bottom;
+}
+.song-acc-big-area{
+    font-size:24px;
+}
+.song-parameter-flex{
+  height:50px;
+  display:grid;
+}
+.song-score-area{
+  height:20px;
+  font-size:15px;
+}
+.song-rank-area{
+  height:20px;
+  font-size:15px;
+}
+.song-parameter-blank{
+  height:10px;
+}
+.song-grade-area{
+  width:5px;
+}
+.song-setting-area{
+  width:calc(100% - 15px);
+  height:20px;
+  color:white;
+  background-color:#b2a500;
+  font-size:14px;
+  display:grid;
+  justify-content:center;
+  border-radius:0px 0px 10px 10px;
+}
+
+#easy{
+  background-color: #12af47;
+}
+
+#hard{
+  background-color: #1aacac;
+}
+
+#master{
+  background-color: #8b28bd;
+}
+
+#hidden{
+  background-color: #463d83;
+}
+
+#desktop{
+  background-color: #b2a500;
+}
+
+#mobile{
+  background-color: #a16101;
+}

@@ -36,7 +36,7 @@
         <div class="select-bar"id="mobile">移动端</div>
     </div>
     <hr>
-    <div class="rank-table">
+    <div class="rank-table" id="rank-table">
         {{if .SongRankData}}
         <table>
             <thead>
@@ -52,7 +52,7 @@
             {{ range .SongRankData }}
             <tr>
                 <td>{{ .Rank }}</td>
-                <td>{{ .UserName }}</td>
+                <td><div id="{{ .UserId }}">{{ .UserName }}</div></td>
                 <td>{{ .Score }}</td>
                 <td>{{ .Acc }}</td>
                 <td>{{ .CharaElfin }}</td>

@@ -40,7 +40,6 @@ func rotateImage(src image.Image, angle float64) image.Image {
 	angleRad := angle * math.Pi / 180
 	cosAngle := math.Cos(angleRad)
 	sinAngle := math.Sin(angleRad)
-
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			dx := x - centerX
@@ -100,7 +99,6 @@ func productingSongPic(songPicName string, isRotate bool) (image.Image, image.Im
 		fmt.Println("解码 PNG 失败:", err)
 		return nil, nil, nil
 	}
-
 	rotatedImg := rotateImage(img, angle)
 
 	width := 80

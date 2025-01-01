@@ -8,7 +8,6 @@ import (
 
 func TestAliasCreateSQL(t *testing.T) {
 	SongDataUpdater.GetBasicAilas()
-
 }
 
 func TestGetSongInfo(t *testing.T) {

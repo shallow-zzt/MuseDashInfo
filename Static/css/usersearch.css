@@ -1,0 +1,101 @@
+.searchbox{
+    width:100%;
+    height:30px;
+    margin:20px 0px;
+    display:flex;
+    justify-content:center;
+  }
+    input {
+      width: 80%;
+      height: 30px;
+      border: 3px solid #19adf1;
+      border-radius: 5px;
+      font-size: 16px;
+      color: #333;
+    }
+  .search-button{
+    width:60px;
+      height: 30px;
+      border: 3px solid #19adf1;
+      border-radius: 5px;
+      font-size: 16px;
+    margin: 0px 10px;
+    padding: 2px 0px 0px 0px;
+      color: #333;
+     text-align:center;
+  }
+  .divider{
+    margin:5px;
+    border:3px solid #666666;
+  }
+  .result-title{
+    width:100%;
+    font-size:25px;
+    text-align:center;
+  }
+  .no-result-tip{
+    display:grid;
+  }
+  .no-result-tip-pic{
+    width:270px;
+    height:270px;
+    margin:10px;
+  }
+  .no-result-tip-pic img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .user-result-list{
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+  }
+  .userdata-title{
+    width:350px;
+    margin: 30px 5px 0px 5px;
+    display:flex;
+    background-color: #eeeeee;
+    border-radius:10px;
+    box-shadow:3px 3px 6px 0px rgba(0, 0, 0, 0.5);
+  }
+  .userdata-content{
+    width:270px;
+    height:100px;
+    display:grid;
+  }
+  .userdata-rks{
+    width:80px;
+    height:100px;
+    display:grid;
+    margin:0px 0px 0px 10px;
+  }
+  .vertical-divider{
+    margin: 5px 0px;
+    border: 1px solid #66666666;
+  }
+  .username{
+    min-height: 30px;
+    font-size: 25px;
+    margin:5px;
+      word-break: break-all;
+  }
+  .userid{
+    min-height: 20px;
+    font-size: 14px;
+    margin:5px;
+    color: #666666;
+  }
+  .rks-value{
+    min-height: 30px;
+    font-size: 25px;
+    margin:5px;
+    text-align:center;
+  }
+  .rks-title{
+    min-height: 20px;
+    font-size: 18px;
+    margin:2px;
+    color: #333333;
+  }

@@ -50,7 +50,7 @@ func SongValueTableInit(db *sql.DB) {
     `
 	_, err := db.Exec(play_table_sql)
 	if err != nil {
-		fmt.Println("创建表失败:", err)
+		fmt.Println(err)
 	}
 }
 

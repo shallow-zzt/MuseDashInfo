@@ -4,13 +4,13 @@ const platform = urlParams.get('platform') || 0;
 
 const DiffTier=["easy","hard","master","hidden"];
 const PlatformList=["pc","mobile"];
-const PlatformColor = "#c2b503";
+const PlatformColor = ["#b2a500","#a16101"];
 const DiffColor=["#12af47","#1aacac","#8b28bd","#463d83"];
 
 document.getElementById(DiffTier[diff]).style.backgroundColor = DiffColor[diff];
 document.getElementById(DiffTier[diff]).style.color = "white";
 
-document.getElementById(PlatformList[platform]).style.backgroundColor = PlatformColor;
+document.getElementById(PlatformList[platform]).style.backgroundColor = PlatformColor[platform];
 document.getElementById(PlatformList[platform]).style.color = "white";
 
 function changeOption(diff,platform){
@@ -43,6 +43,13 @@ document.getElementById("platform-area").addEventListener('click', (event) => {
     }
     else if(event.target.matches("#mobile")){	
         changeOption(diff,1);	
+    }
+}
+);
+
+document.getElementById("rank-table").addEventListener('click', (event) => {
+    if(event.target.id.length == 32){
+        window.location.href = `../user/${event.target.id}`
     }
 }
 );

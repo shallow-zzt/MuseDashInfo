@@ -48,6 +48,9 @@ func calRks(acc float64, rank int, musicAlbum int, musicAlbumNumber int, musicDi
 	db := DBConnector()
 	songRKS := GetSongValue(db, musicAlbum, musicAlbumNumber, musicDiff)
 	defer db.Close()
+	if songRKS < 0 {
+		return -1
+	}
 	index := float64(1001-rank)/1000*0.04 + 1
 	return acc * index * songRKS / 100
 }

@@ -1,5 +1,6 @@
 const diffRegex = /(\d+)-(\d+)-(\d+)/
 
+
 function detectDevice() {
     var userAgent = navigator.userAgent;
     if (/Mobile|Android|iP(hone|od|ad)|IEMobile|BlackBerry|Opera Mini/i.test(userAgent)) {

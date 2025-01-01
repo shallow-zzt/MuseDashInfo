@@ -89,12 +89,12 @@ body {
 
 #pc:hover{
     color: white;
-    background-color: #c2b503;
+    background-color: #b2a500;
 }
 
 #mobile:hover{
     color: white;
-    background-color: #c2b503;
+    background-color: #a16101;
 }
 
 table {
@@ -125,6 +125,7 @@ th:nth-child(1), td:nth-child(1) {
 }
 
 th:nth-child(2), td:nth-child(2) {
+    word-break: break-all;
     width: 40%;
 }
 
@@ -256,7 +257,7 @@ footer{
     }
     th:nth-child(2), td:nth-child(2) {
         width: 40%;
-        max-width: 120px;
+        max-width: 100px;
     }
     .select-bar{
         flex: 1;
