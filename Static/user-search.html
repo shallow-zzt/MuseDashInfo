@@ -5,11 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MuseDash用户搜索</title>
     <link href="css/usersearch.css" rel="stylesheet">
+    <link href="css/long-searchbar.css" rel="stylesheet">
+    <link href="css/navbar.css" rel="stylesheet">
 </head>
 <body>
+  <div class="navbar">
+    <a href="../home">主页</a>
+    <a href="../value">曲目</a>
+    <a href="../search">查询用户</a>
+    <a href="../alias">曲目别名</a>
+    <a href="../guessgame">猜曲绘</a>
+    <a href="../about">关于</a>
+</div>
+<div class="navbar-blank"></div>
     <div class="searchbox">
-        <input type="text" id="user-search-content" name="input">
-        <div class="search-button">搜索</div>
+        <input type="text" id="user-search-content" name="input" placeholder="搜索用户名或者ID">
+        <div class="search-button" id="submit-search">搜索</div>
       </div>
       <div class="divider"></div>
       {{if ne .UserNum 0}}
@@ -22,9 +33,9 @@
       </div>
       {{ end }}
       {{if gt .UserNum 0}}
-      <div class="user-result-list">
-        {{ range .SearchDetails }}
-        <div class="userdata-title">
+      <div class="user-result-list" id="user-result-list">
+        {{ range .UserDetails }}
+        <div class="userdata-title" id="{{.UserId}}">
         <div class="userdata-content">
             <div class="username">{{.UserName}}</div>
             <div class="userid">{{.UserId}}</div>  
@@ -32,11 +43,12 @@
         <div class="vertical-divider"></div>
         <div class="userdata-rks">
             <div class="rks-title">RKS</div>
-            <div class="rks-value">{{.UserRKS}}</div>      
+            <div class="rks-value">{{.UserRKSString}}</div>      
         </div>
       </div>
       {{ end }}
       </div>
       {{ end }}
 </body>
+<script src="js/usersearch.js"></script>
 </html>

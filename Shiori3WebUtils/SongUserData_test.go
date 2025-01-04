@@ -21,3 +21,8 @@ func TestGetUserSongInfo(t *testing.T) {
 	var songdb = SongDataUpdater.DBConnector("../mdsong.db")
 	fmt.Println(GetUserSongList(db, songdb, "6bb31610695511eb962d0242ac11005e", 200, 0))
 }
+
+func TestGetSearchUser(t *testing.T) {
+	var db = SongDataUpdater.DBConnector("../MDRankData.db")
+	fmt.Println(GetSongUserSearchResult(db, "檐下汐"))
+}

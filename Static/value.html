@@ -3,19 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shiori3 MD定数总览</title>
+    <title>MuseDash定数总览</title>
     <link href="css/value.css" rel="stylesheet">
     <link href="css/navbar.css" rel="stylesheet">
+    <link href="css/long-searchbar.css" rel="stylesheet">
 </head>
 <body>
     <div class="navbar">
-        <a href="./home">Home</a>
-        <a href="./value">Songs</a>
-        <a href="./alias">Alias</a>
-        <a href="./about">About</a>
+        <a href="../home">主页</a>
+        <a href="../value">曲目</a>
+        <a href="../search">查询用户</a>
+        <a href="../alias">曲目别名</a>
+        <a href="../guessgame">猜曲绘</a>
+        <a href="../about">关于</a>
     </div>
     <div class="navbar-blank"></div>
-    <div class="title">Shiori3 MD定数总览</div>
+    <div class="title">MuseDash定数总览</div>
+    <div class="searchbox">
+        <input type="text" id="user-search-content" name="input" placeholder="搜索曲目">
+      </div>
+      <div class="divider"></div>
     <div class="song-pic-list" id="song-table">
         {{ range . }}
             <div class="song-item">

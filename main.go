@@ -32,6 +32,7 @@ func main() {
 	http.HandleFunc("/value", songValueIndex)
 	http.HandleFunc("/rank/{anything}", songRankShowIndex)
 	http.HandleFunc("/user/{anything}", songUserData)
+	http.HandleFunc("/search", songUserSearch)
 
 	http.HandleFunc("/submit/guessgame/answer", guessGmaeJudgeSubmit)
 	http.HandleFunc("/submit/aliassong/alias", songAliasSubmit)
@@ -86,6 +87,23 @@ func songAliasIndex(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, AllSongInfos)
 }
 
+func songUserSearch(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("Static/user-search.html")
+	var songSearchResult MDWebPageUtils.SongUserSearch
+	query := r.URL.Query()
+	userInput := query.Get("search")
+	if userInput == "" {
+		songSearchResult.UserNum = 0
+	} else {
+		songSearchResult = MDWebPageUtils.GetSongUserSearchResult(rankdb, userInput)
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	t.Execute(w, songSearchResult)
+}
+
 func songUserData(w http.ResponseWriter, r *http.Request) {
 
 	originURL := strings.Split(r.URL.Path, "/")
@@ -97,6 +115,7 @@ func songUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	songUserDataList := MDWebPageUtils.GetUserSongList(rankdb, db, userId, 200, 0)
+
 	t.Execute(w, songUserDataList)
 }
 
@@ -181,9 +200,9 @@ func songValueIndex(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	useOriginDiff := query.Get("originDiff")
 	if useOriginDiff == "1" {
-		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db, 1)
-	} else {
 		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db)
+	} else {
+		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db, 1)
 	}
 	t.Execute(w, allValueInfos)
 }

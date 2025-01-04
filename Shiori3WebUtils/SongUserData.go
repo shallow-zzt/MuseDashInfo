@@ -37,6 +37,7 @@ type SongData struct {
 	SongCharaName  string
 	SongElfin      int
 	SongElfinName  string
+	IsUnknown      int
 }
 
 type UserSongInfo struct {
@@ -108,30 +109,11 @@ func (c *SongData) ConvertSongAcc() {
 }
 
 func (c *SongData) GetSimpleRKS() {
-	if c.RKSValueSimple < 0 {
+	if c.RKSValueSimple <= 0 {
 		c.RKSValueString = "N/A"
 		return
 	}
 	c.RKSValueString = strconv.FormatFloat(c.RKSValueSimple, 'f', -1, 64)
-}
-
-func GetTotalRKS(db *sql.DB, userID string, bestSongs int) float64 {
-	var averageRKS float64
-	SQLCode := `SELECT AVG(rks) AS rks_average
-	FROM(
-	SELECT rks FROM mdplay WHERE user_id=? ORDER BY rks DESC LIMIT ?
-	)`
-	result := db.QueryRow(SQLCode, userID, bestSongs)
-	result.Scan(&averageRKS)
-	return averageRKS
-}
-
-func GetUserName(db *sql.DB, userID string) string {
-	var userName string
-	SQLCode := `SELECT nickname FROM mduser WHERE user_id is ?`
-	result := db.QueryRow(SQLCode, userID)
-	result.Scan(&userName)
-	return userName
 }
 
 func GetUserSongList(db *sql.DB, songdb *sql.DB, userID string, bestSongs int, bestSongsOffset int) UserSongInfo {
@@ -139,7 +121,7 @@ func GetUserSongList(db *sql.DB, songdb *sql.DB, userID string, bestSongs int, b
 	var sqlTemp interface{}
 	userSongInfo.UserId = userID
 	userSongInfo.UserName = GetUserName(db, userID)
-	userSongInfo.TotalRKSValue = GetTotalRKS(db, userID, bestSongs)
+	userSongInfo.TotalRKSValue = GetTotalRKS(db, userID, 30)
 	userSongInfo.TotalRKSValueSimple = math.Floor(userSongInfo.TotalRKSValue*100) / 100
 	var songInfoList []SongData
 	SQLCode := `SELECT * FROM mdplay WHERE user_id=? ORDER BY rks DESC LIMIT ? OFFSET ?`
@@ -147,13 +129,13 @@ func GetUserSongList(db *sql.DB, songdb *sql.DB, userID string, bestSongs int, b
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println()
 	for result.Next() {
 		var songData SongData
 		err = result.Scan(&songData.PlatformCode, &songData.AlbumCode, &songData.SongCode, &songData.DiffTierCode, &songData.SongRank, &sqlTemp, &songData.SongAcc, &sqlTemp, &songData.SongScore, &sqlTemp, &songData.SongChara, &songData.SongElfin, &songData.Playtime, &songData.RKSValue)
 		if err != nil {
 			log.Fatal(err)
 		}
+		songData.IsUnknown = 0
 		songData.RKSValueSimple = math.Floor(songData.RKSValue*100) / 100
 		songData.SongPic = GetSongPicFromCode(songdb, songData.AlbumCode, songData.SongCode)
 		songData.DiffValue = GetSongDiffFromCode(songdb, songData.AlbumCode, songData.SongCode)[songData.DiffTierCode-1]
@@ -163,7 +145,11 @@ func GetUserSongList(db *sql.DB, songdb *sql.DB, userID string, bestSongs int, b
 		songData.ConvertPlayTime()
 		songData.ConvertSongAcc()
 		songData.ShortenSongName(9)
+		if songData.SongPic == "random_song_cover" {
+			songData.IsUnknown = 1
+		}
 		songInfoList = append(songInfoList, songData)
+
 	}
 	userSongInfo.UserSongInfoList = songInfoList
 	return userSongInfo

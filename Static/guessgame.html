@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MuseDash猜曲绘</title>
   <link href="css/guessgame.css" rel="stylesheet">
+  <link href="css/navbar.css" rel="stylesheet">
 </head>
 <body>
+  <div class="navbar">
+    <a href="../home">主页</a>
+    <a href="../value">曲目</a>
+    <a href="../search">查询用户</a>
+    <a href="../alias">曲目别名</a>
+    <a href="../guessgame">猜曲绘</a>
+    <a href="../about">关于</a>
+</div>
   <div class="container">
     <div id="quest-title">这是哪首曲目的曲绘？</div>
     <div id="answer-result"></div>
@@ -14,7 +23,7 @@
     {{ if .Answerb64 }}<div class="full-pic" id="answer-pic"><img src="data:image/png;base64,{{ .Answerb64 }}"></div>{{ end }}
     {{ if .Cuttedb64 }}<div class="cutted-pic" id="quest-pic"><img src="data:image/png;base64,{{ .Cuttedb64 }}"></div>{{ end }}
     <div id="answer-song">{{ .SongAnswerName }}</div>
-    <div><input type="text" id="answer" name="input"></div>
+    <div><input type="text" id="answer" name="input" placeholder="请输入答案"></div>
     <div class="sub-title" id="possible-answer">你要提交的是不是</div>
     <div class="possible-area" id="possible-list">
 

@@ -9,11 +9,13 @@
 </head>
 <body>
   <div class="navbar">
-    <a href="../../home">Home</a>
-    <a href="../../value">Songs</a>
-    <a href="../../alias">Alias</a>
-    <a href="../../about">About</a>
-  </div>
+    <a href="../home">主页</a>
+    <a href="../value">曲目</a>
+    <a href="../search">查询用户</a>
+    <a href="../alias">曲目别名</a>
+    <a href="../guessgame">猜曲绘</a>
+    <a href="../about">关于</a>
+</div>
 <div class="navbar-blank"></div>
   <div class="userdata-title">
     <div class="userdata-content">
@@ -28,7 +30,7 @@
   <div class="divider"></div>
   <div class="song-pic-list" id="user-song-table">
     {{ range $index, $item := .UserSongInfoList }}
-    <div class="song-data-frame" id="{{.AlbumCode}}-{{.SongCode}}-{{.DiffTierCode}}-{{.PlatformCode}}">
+    <div class="song-data-frame" {{ if eq $item.IsUnknown 0 }} id="{{.AlbumCode}}-{{.SongCode}}-{{.DiffTierCode}}-{{.PlatformCode}}" {{ end }}>
     <div class="song-value-area" id="{{ $item.DiffTier }}">
           #{{ $index }} | {{ $item.RKSValueString }} | {{ $item.PlayTimeBefore }}
     </div>
