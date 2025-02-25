@@ -46,4 +46,4 @@ $ go run main.go
 ---
 
 ⭐ 如果你觉得这个项目对你有帮助，请给个 star！  
-也可以在爱发电里面支持一下的说~
+也可以在[爱发电](https://afdian.com/a/musedashinfotools)里面支持一下的说~
