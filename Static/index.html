@@ -1,26 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>MuseDash猜曲绘</title>
-  <link href="css/style.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuseDash.io</title>
+    <link href="css/index.css" rel="stylesheet">
+    <link href="css/navbar.css" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div id="quest-title">这是哪首曲目的曲绘？</div>
-    <div id="answer-result"></div>
-    {{ if .Rotateb64 }}<div class="full-pic" id="pure-pic"><img src="data:image/png;base64,{{ .Rotateb64 }}"></div>{{ end }}
-    {{ if .Answerb64 }}<div class="full-pic" id="answer-pic"><img src="data:image/png;base64,{{ .Answerb64 }}"></div>{{ end }}
-    {{ if .Cuttedb64 }}<div class="cutted-pic" id="quest-pic"><img src="data:image/png;base64,{{ .Cuttedb64 }}"></div>{{ end }}
-    <div id="answer-song">{{ .SongAnswerName }}</div>
-    <div><input type="text" id="answer" name="input"></div>
-    <div class="sub-title" id="possible-answer">你要提交的是不是</div>
-    <div class="possible-area" id="possible-list">
-
+    <div class="overlay" onclick="closeMenu()"></div>
+    <div class="navbar">
+        <a href="../home">主页</a>
+        <a href="../value">曲目</a>
+        <a href="../search">查询用户</a>
+        <a href="../alias">曲目别名</a>
+        <a href="../guessgame">猜曲绘</a>
+        <a href="../about">关于</a>
+        <div class="compressed" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
-    <div><div class="event-button" id="submit-answer">提交</div></div>
-    <div><div class="event-button" id="reset-quest">刷新题目</div></div>
-    <div id="possible-answer"></div>
-  </div>
-  <script src="js/index.js"></script>
+    <div class="navbar-blank"></div>
+    <div class="title">Welcome！</div>
+    <div class="title-pic"><img src="pic/mdinfotitle.webp"></div>
+    <div class="home-sub-title">欢迎来到musedash.info~</div>
+    <div class="home-sub-title">这里是一个可以查musedash相关数据的神奇地方捏~</div>
+    <div class="home-sub-title">想要查什么东西，可以点击上面的导航栏喔~</div>
+    <div id="try-functions">
+        <div class="home-sub-title-tip">比如，看看<a href="./value">曲目列表</a>？</div>
+        <div class="home-sub-title-tip">比如，查查<a href="./search">你的上榜记录</a>？</div>
+        <div class="home-sub-title-tip">比如，<a href="./guessgame">猜一下曲绘</a>玩玩？</div>
+    </div>
+    <script src="js/index.js"></script>
+    <script src="js/navbar.js"></script>
 </body>
 </html>

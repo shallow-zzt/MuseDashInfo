@@ -1,7 +1,10 @@
 body {
     margin: 0;
-    display: grid;
-    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    overflow-x: hidden;
 }
 
 .title{
@@ -10,10 +13,18 @@ body {
     text-align: center;
 }
 
+.sub-title{
+    width: 100%;
+  font-size: 20px;
+  color: #666666;
+    text-align: center;
+}
+
+
 .song-pic-list {
     display: flex;
     flex-wrap: wrap;
-    width: 100%;
+    width: 100vw;
     justify-content: center;
 }
 
@@ -36,11 +47,27 @@ body {
 }
 
 .song-pic-area {
+    position:relative;
     width: 100%;
     height: 100px;
     overflow: hidden;
 }
-
+.song-album-name-area{
+    position:absolute;
+    top: calc(100% - 25px); 
+    left: 0;
+    width:calc(100% - 4px);
+    height:20px;
+    color:white;
+    display:grid;
+    justify-content:center;
+    background-color:#402969;
+    border-radius:6px;
+    border: 2px solid #231736;
+    font-size:14px;
+    padding-top: 1px;
+    word-break: break-all;
+  }
 .song-pic-area img{
     width: 100%;
     height: 100%;
@@ -51,6 +78,7 @@ body {
     min-height: 20px;
     font-size: 14px;
     text-align: center;
+    word-break: break-all;
 }
 
 .feedback-button{
@@ -120,10 +148,22 @@ body {
     border-radius: 5px;
 }
 
+#unselected-value{
+    color:white;
+    background-color: #999999;  
+    border-radius: 5px;
+}
+
 @media screen and (max-width: 800px) {
     .title{
         width: 100%;
       font-size: 25px;
+        text-align: center;
+    }
+    .sub-title{
+        width: 100%;
+      font-size: 16px;
+      color: #666666;
         text-align: center;
     }
     .song-item {
@@ -144,22 +184,40 @@ body {
         box-sizing: border-box;
     }
     .song-pic-area {
+        position:relative;
         width: 100%;
         height: 70px;
         overflow: hidden;
     }
     .song-name-area{
         min-height: 15px;
-        font-size: 10px;
+        font-size: 12px;
         text-align: center;
     }    
+    .song-album-name-area{
+        position:absolute;
+        top: calc(100% - 20px); 
+        left: 0;
+        width:calc(100% - 4px);
+        height:15px;
+        color:white;
+        display:grid;
+        justify-content:center;
+        background-color:#402969;
+        border-radius:6px;
+        border: 2px solid #231736;
+        font-size:10px;
+        padding-top: 1px;
+        word-break: break-all;
+      }
     .value-area{
         display: grid;
-        width: 80px;
+        width: 60px;
+        margin-left: 20px;
         justify-content: center;
     }
     .value-easy{
-        width: 80px;
+        width: 60px;
         height: 20px;
         font-size: 14px;
         text-align: center;
@@ -171,7 +229,7 @@ body {
     }
     
     .value-hard{
-        width: 80px;
+        width: 60px;
         height: 20px;
         font-size: 14px;
         text-align: center;
@@ -183,7 +241,7 @@ body {
     }
     
     .value-master{
-        width: 80px;
+        width: 60px;
         height: 20px;
         font-size: 14px;
         text-align: center;
@@ -195,7 +253,7 @@ body {
     }
     
     .value-hidden{
-        width: 80px;
+        width: 60px;
         height: 20px;
         font-size: 14px;
         text-align: center;

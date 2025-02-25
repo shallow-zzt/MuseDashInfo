@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuseDash定数总览</title>
+    <title>MuseDash曲目总览</title>
     <link href="css/value.css" rel="stylesheet">
     <link href="css/navbar.css" rel="stylesheet">
     <link href="css/long-searchbar.css" rel="stylesheet">
+    <link href="css/diff-fliter.css" rel="stylesheet">
+    <link href="css/no-result.css" rel="stylesheet">
 </head>
 <body>
+    <div class="overlay" onclick="closeMenu()"></div>
     <div class="navbar">
         <a href="../home">主页</a>
         <a href="../value">曲目</a>
@@ -16,29 +19,56 @@
         <a href="../alias">曲目别名</a>
         <a href="../guessgame">猜曲绘</a>
         <a href="../about">关于</a>
+        <div class="compressed" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
+
     <div class="navbar-blank"></div>
-    <div class="title">MuseDash定数总览</div>
+    <div class="title">MuseDash曲目总览</div>
+    <div class="sub-title">定数为非官方数据<a href="../about#site-info">（查看来源）</a></div>
     <div class="searchbox">
-        <input type="text" id="user-search-content" name="input" placeholder="搜索曲目">
-      </div>
-      <div class="divider"></div>
+        <input type="text" id="user-search-content" name="input" placeholder="搜索曲名或者曲目别名">
+        <div class="search-button" id="submit-search">搜索</div>
+    </div>
+    <div class="diff-fliter-area">
+        <div class="fliter-text">难度筛选：</div>
+        <div><input class="diff-input" type="number" id="diff-floor" name="input" placeholder=""></div>
+        <div class="fliter-text"> ~ </div>
+        <div><input class="diff-input" type="number" id="diff-ceil" name="input" placeholder=""></div>
+        <div class="diff-fliter-button" id="submit-fliter">筛选</div>
+    </div>
+    <div class="divider"></div>
     <div class="song-pic-list" id="song-table">
-        {{ range . }}
+        {{if eq .SongCount 0}}
+        <div class="result-tip">
+          <div class="result-tip-pic"><img src="pic/no-result.webp"></div>
+          <div class="result-title">找不到曲目捏~</div>
+        </div>
+        {{ else }}
+        {{ range .SongValueInfoList }}
             <div class="song-item">
                 <div class="song-area">
-                    <div class="song-pic-area"><img src="alias/pic/{{.SongPic}}.png"></div>
+                    <div class="song-pic-area">
+                        <img src="alias/pic/{{.SongPic}}.png">
+                        <div class="song-album-name-area">{{.AlbumNameShort}}</div>
+                    </div>
                     <div class="song-name-area">{{.SongName}}</div>
                 </div>
                 <div class="value-area" id="value-area">
-                    <div class="value-easy" {{if eq .SongValueEasy 0.0}}id="no-value"{{else}}id="{{ .AlbumCode }}-{{ .SongCode }}-1"{{ end }}>{{if eq .SongValueEasy 0.0}}----{{else if eq .SongValueEasy -1.0}}？{{else}}{{.SongValueEasy}}{{ end }}</div>
-                    <div class="value-hard" {{if eq .SongValueHard 0.0}}id="no-value"{{else}}id="{{ .AlbumCode }}-{{ .SongCode }}-2"{{ end }}>{{if eq .SongValueHard 0.0}}----{{else if eq .SongValueHard -1.0}}？{{else}}{{.SongValueHard}}{{ end }}</div>
-                    <div class="value-master" {{if eq .SongValueMaster 0.0}}id="no-value"{{else}}id="{{ .AlbumCode }}-{{ .SongCode }}-3"{{ end }}>{{if eq .SongValueMaster 0.0}}----{{else if eq .SongValueMaster -1.0}}？{{else}}{{.SongValueMaster}}{{ end }}</div>
-                    <div class="value-hidden" {{if eq .SongValueHidden 0.0}}id="no-value"{{else}}id="{{ .AlbumCode }}-{{ .SongCode }}-4"{{ end }}>{{if eq .SongValueHidden 0.0}}----{{else if eq .SongValueHidden -1.0}}？{{else}}{{.SongValueHidden}}{{ end }}</div>
+                    <div class="value-easy" {{if eq .SongValueEasy 0.0}}id="no-value"{{else}}{{if .SongValueEasyHighlight}}id="{{ .AlbumCode }}-{{ .SongCode }}-1"{{else}}id="unselected-value"{{ end }}{{ end }}>{{if eq .SongValueEasy 0.0}}----{{else if eq .SongValueEasy -1.0}}{{.SongValueEasyString}}{{else}}{{.SongValueEasy}}{{ end }}</div>
+                    <div class="value-hard" {{if eq .SongValueHard 0.0}}id="no-value"{{else}}{{if .SongValueHardHighlight}}id="{{ .AlbumCode }}-{{ .SongCode }}-2"{{else}}id="unselected-value"{{ end }}{{ end }}>{{if eq .SongValueHard 0.0}}----{{else if eq .SongValueHard -1.0}}{{.SongValueHardString}}{{else}}{{.SongValueHard}}{{ end }}</div>
+                    <div class="value-master" {{if eq .SongValueMaster 0.0}}id="no-value"{{else}}{{if .SongValueMasterHighlight}}id="{{ .AlbumCode }}-{{ .SongCode }}-3"{{else}}id="unselected-value"{{ end }}{{ end }}>{{if eq .SongValueMaster 0.0}}----{{else if eq .SongValueMaster -1.0}}{{.SongValueMasterString}}{{else}}{{.SongValueMaster}}{{ end }}</div>
+                    <div class="value-hidden" {{if eq .SongValueHidden 0.0}}id="no-value"{{else}}{{if .SongValueHiddenHighlight}}id="{{ .AlbumCode }}-{{ .SongCode }}-4"{{else}}id="unselected-value"{{ end }}{{ end }}>{{if eq .SongValueHidden 0.0}}----{{else if eq .SongValueHidden -1.0}}{{.SongValueHiddenString}}{{else}}{{.SongValueHidden}}{{ end }}</div>
                 </div>
             </div>
         {{ end }}
+        {{ end }}        
     </div>
 </body>
 <script src="js/value.js"></script>
+<script src="js/songsearch.js"></script>
+<script src="js/navbar.js"></script>
 </html>

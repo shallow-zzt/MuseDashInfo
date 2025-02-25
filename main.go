@@ -1,7 +1,7 @@
 package main
 
 import (
-	MDWebPageUtils "db/Shiori3WebUtils"
+	MDWebPageUtils "db/MDWebUtils"
 	"db/SongDataUpdater"
 	"encoding/json"
 	"fmt"
@@ -18,14 +18,25 @@ var rankdb = SongDataUpdater.DBConnector("MDRankData.db")
 
 func main() {
 
-	go func() {
-		//SongCatcher.Catcher()
-	}()
+	// go func() {
+	// 	for {
+	// 		SongCatcher.Catcher()
+	// 		time.Sleep(1 * time.Hour)
+	// 	}
+	// }()
+	// go func() {
+	// 	time.Sleep(15 * time.Minute)
+	// 	for {
+	// 		SongCatcher.SetUserTotalRks(rankdb)
+	// 	}
+	// }()
 
 	http.HandleFunc("/css/{anything}", ServeStaticFile("static/css", "css"))
 	http.HandleFunc("/js/{anything}", ServeStaticFile("static/js", "js"))
+	http.HandleFunc("/pic/{anything}", ServeStaticFile("static/image", "webp"))
 	http.HandleFunc("/alias/pic/{anything}", ServeStaticFile("SongAssets/Songpic", "png"))
 
+	http.HandleFunc("/", homePageIndex)
 	http.HandleFunc("/guessgame", miniGameIndex)
 	http.HandleFunc("/alias", songAliasIndex)
 	http.HandleFunc("/alias/{anything}", songAliasSettingIndex)
@@ -33,6 +44,7 @@ func main() {
 	http.HandleFunc("/rank/{anything}", songRankShowIndex)
 	http.HandleFunc("/user/{anything}", songUserData)
 	http.HandleFunc("/search", songUserSearch)
+	http.HandleFunc("/about", aboutPageIndex)
 
 	http.HandleFunc("/submit/guessgame/answer", guessGmaeJudgeSubmit)
 	http.HandleFunc("/submit/aliassong/alias", songAliasSubmit)
@@ -51,8 +63,24 @@ func ServeStaticFile(basepath string, fileext string) http.HandlerFunc {
 			w.Header().Set("Content-Type", "application/javascript")
 		case "png":
 			w.Header().Set("Content-Type", "image/png")
+		case "webp":
+			w.Header().Set("Content-Type", "image/webp")
 		}
 		http.ServeFile(w, r, filepath.Join(basepath, filename[len(filename)-1]))
+	}
+}
+
+func homePageIndex(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" || r.URL.Path == "/home" {
+		t, err := template.ParseFiles("Static/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		t.Execute(w, nil)
+	} else {
+		http.Error(w, "404 Not Found", http.StatusNotFound)
+		return
 	}
 }
 
@@ -60,7 +88,6 @@ func miniGameIndex(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/favicon.ico" {
 		return
 	}
-
 	t, err := template.ParseFiles("Static/guessgame.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -82,20 +109,35 @@ func songAliasIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	AllSongInfos := MDWebPageUtils.GetAllSongInfo(db)
+	query := r.URL.Query()
+	searchInput := query.Get("search")
+	var AllSongInfos MDWebPageUtils.FullSongAliasInfoWithCount
+	if searchInput != "" {
+		AllSongInfos = MDWebPageUtils.GetPartialSongInfo(db, searchInput)
+	} else {
+		AllSongInfos = MDWebPageUtils.GetAllSongInfo(db)
+	}
 	t.Execute(w, AllSongInfos)
 }
 
 func songUserSearch(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("Static/user-search.html")
 	var songSearchResult MDWebPageUtils.SongUserSearch
+	userPage := 1
 	query := r.URL.Query()
+	if pageStr := query.Get("page"); pageStr != "" {
+		if parsedPage, err := strconv.Atoi(pageStr); err == nil {
+			userPage = parsedPage
+		}
+	}
+	if userPage <= 0 || err != nil {
+		userPage = 1
+	}
 	userInput := query.Get("search")
 	if userInput == "" {
-		songSearchResult.UserNum = 0
+		songSearchResult.UserNum = -1
 	} else {
-		songSearchResult = MDWebPageUtils.GetSongUserSearchResult(rankdb, userInput)
+		songSearchResult = MDWebPageUtils.GetSongUserSearchResult(rankdb, userInput, 10, (userPage-1)*10)
 	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -114,7 +156,17 @@ func songUserData(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	songUserDataList := MDWebPageUtils.GetUserSongList(rankdb, db, userId, 200, 0)
+	userPage := 1
+	query := r.URL.Query()
+	if pageStr := query.Get("page"); pageStr != "" {
+		if parsedPage, err := strconv.Atoi(pageStr); err == nil {
+			userPage = parsedPage
+		}
+	}
+	if userPage <= 0 || err != nil {
+		userPage = 1
+	}
+	songUserDataList := MDWebPageUtils.GetUserSongList(rankdb, db, userId, 50, (userPage-1)*50)
 
 	t.Execute(w, songUserDataList)
 }
@@ -196,13 +248,34 @@ func songValueIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	var allValueInfos []MDWebPageUtils.FullSongValueInfo
+	var allValueInfos MDWebPageUtils.FullSongValueInfoWithNum
+
+	useOriginDiff := "1"
+	searchInput := ""
+	diffMaxValue := 13.0
+	diffMinValue := -1.0
+	hasMaxValue := true
+
 	query := r.URL.Query()
-	useOriginDiff := query.Get("originDiff")
+	useOriginDiff = query.Get("originDiff")
+	searchInput = query.Get("search")
+	diffMaxValue, err = strconv.ParseFloat(query.Get("maxDiff"), 64)
+	if err != nil {
+		diffMaxValue = 13.0
+		hasMaxValue = false
+	}
+	diffMinValue, err = strconv.ParseFloat(query.Get("minDiff"), 64)
+	if err != nil {
+		if hasMaxValue {
+			diffMinValue = 1.0
+		} else {
+			diffMinValue = -1.0
+		}
+	}
 	if useOriginDiff == "1" {
-		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db)
+		allValueInfos = MDWebPageUtils.GetPartialSongValueInfo(db, searchInput, diffMinValue, diffMaxValue, 1)
 	} else {
-		allValueInfos = MDWebPageUtils.GetAllSongValueInfo(db, 1)
+		allValueInfos = MDWebPageUtils.GetPartialSongValueInfo(db, searchInput, diffMinValue, diffMaxValue)
 	}
 	t.Execute(w, allValueInfos)
 }
@@ -211,7 +284,15 @@ func songRankShowIndex(w http.ResponseWriter, r *http.Request) {
 	originURL := strings.Split(r.URL.Path, "/")
 	fullSongCode := strings.Split(originURL[len(originURL)-1], "-")
 	AlbumCode, err := strconv.Atoi(fullSongCode[0])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	SongCode, err := strconv.Atoi(fullSongCode[1])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	diff, err := strconv.Atoi(r.URL.Query().Get("diff"))
 	if err != nil {
@@ -278,4 +359,13 @@ func guessGmaeJudgeSubmit(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(MiniGameResult)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(MiniGameResult)
+}
+
+func aboutPageIndex(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("Static/about.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	t.Execute(w, nil)
 }

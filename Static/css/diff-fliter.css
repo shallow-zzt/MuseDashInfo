@@ -1,0 +1,33 @@
+.diff-fliter-area{
+    width: 100vw;
+    height: 30px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .fliter-text{
+      font-size: 18px;
+      padding: 4px 10px 5px 10px;
+      text-align:center;
+  }
+  .diff-input {
+    width: 40px;
+    height: 30px;
+    border: 3px solid #19adf1;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .diff-fliter-button {
+      width:60px;
+      height: 30px;
+      border: 3px solid #19adf1;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 0px 20px;
+      padding: 2px 0px 0px 0px;
+      color: #333;
+      text-align:center;
+  }

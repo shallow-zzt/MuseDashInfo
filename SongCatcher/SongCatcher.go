@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,12 +14,13 @@ import (
 )
 
 const (
-	MAX_ALBUM        = 100
-	MAX_ALBUM_NUMBER = 100
-	MAX_DIFF         = 4
-	DB_NAME          = "MDRankData.db"
-	PLAY_TABLE       = "mdplay"
-	USER_TABLE       = "mduser"
+	MAX_ALBUM         = 100
+	MAX_ALBUM_NUMBER  = 100
+	MAX_DIFF          = 4
+	DB_NAME           = "MDRankData.db"
+	PLAY_TABLE        = "mdplay"
+	USER_TABLE        = "mduser"
+	RKS_HISTORY_TABLE = "mdrks"
 )
 
 func DBConnector(filepath ...string) *sql.DB {
@@ -55,8 +57,7 @@ func calRks(acc float64, rank int, musicAlbum int, musicAlbumNumber int, musicDi
 	return acc * index * songRKS / 100
 }
 
-func Catcher() {
-
+func Catcher(albumStart ...int) {
 	db, err := sql.Open("sqlite3", DB_NAME)
 	if err != nil {
 		fmt.Println("连接数据库失败:", err)
@@ -65,24 +66,34 @@ func Catcher() {
 	defer db.Close()
 	createTable(db)
 
-	for songAlbum := 68; songAlbum <= MAX_ALBUM; songAlbum++ {
+	var albumStartNum int
+	if len(albumStart) == 0 {
+		albumStartNum = 0
+	} else {
+		albumStartNum = albumStart[0]
+	}
+
+	for songAlbum := albumStartNum; songAlbum <= MAX_ALBUM; songAlbum++ {
 		for songAlbumNumber := 0; songAlbumNumber <= MAX_ALBUM; songAlbumNumber++ {
 			fmt.Println(songAlbum, songAlbumNumber)
 			for songDiff := 1; songDiff <= MAX_DIFF; songDiff++ {
 				for platform := 0; platform <= 1; platform++ {
 					for offset := 0; offset <= 17; offset++ {
+						rand.Seed(time.Now().UnixNano())
+						randCoolDown := rand.Intn(3) + 2
 						apiData, err := GetAPIData(platform, songAlbum, songAlbumNumber, songDiff, offset)
 						if err != nil {
 							continue
 						}
 						if offset%2 == 0 {
-							t := time.After(1 * time.Second)
+							t := time.After(time.Duration(randCoolDown-1) * time.Second)
 							<-t
 						}
 						mdStatus := apiData.(map[string]interface{})["total"]
 						fmt.Println(mdStatus)
 						if mdStatus == nil || (mdStatus.(float64)) != 2000 {
-							songAlbumNumber = MAX_ALBUM
+							platform = 2
+							songDiff = MAX_DIFF + 1
 							break
 						}
 
@@ -106,7 +117,6 @@ func Catcher() {
 							dbData.playTime = playData["updated_at"].(string)
 							dbData.nickname = userData["nickname"].(string)
 							dbData.rks = calRks(dbData.acc, dbData.rank, dbData.musicAlbum, dbData.musicAlbumNumber, dbData.musicDiff)
-							// dbData.rks = 0
 							fmt.Println(dbData)
 							err := insertMDData(db, dbData)
 							if err != nil {
@@ -116,13 +126,11 @@ func Catcher() {
 						if err != nil {
 							fmt.Println("获取API数据失败:", err)
 						}
-
 					}
 				}
 			}
 		}
 	}
-
 }
 
 func GetAPIData(platform int, songAlbum int, songAlbumNumber int, songDiff int, offset int) (interface{}, error) {
@@ -136,45 +144,18 @@ func GetAPIData(platform int, songAlbum int, songAlbumNumber int, songDiff int, 
 	var apiData interface{}
 
 	resp, err := http.Get(apiUrl)
+	if err != nil {
+		return nil, err
+	}
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 	err = json.Unmarshal(body, &apiData)
 	if err != nil {
 		return nil, err
 	}
 	return apiData, nil
-}
-
-func createTable(db *sql.DB) {
-	play_table_sql := `
-        CREATE TABLE IF NOT EXISTS ` + PLAY_TABLE + ` (
-			platform INTEGER NOT NULL,
-			music_album_id INTEGER NOT NULL,
-			music_album_song_id INTEGER NOT NULL,
-			music_difficulty INTEGER NOT NULL,
-			rank INTEGER NOT NULL,
-			user_id TEXT,
-			acc REAL,
-			miss INTEGER,
-            score INTEGER,
-			judge TEXT,
-			character_uid INTEGER,
-			elfin_uid INTEGER,
-			updated_at TEXT,
-			rks REAL,
-			PRIMARY KEY (platform, music_album_id,music_album_song_id, music_difficulty, rank)
-        );
-    `
-	user_table_sql := `
-        CREATE TABLE IF NOT EXISTS ` + USER_TABLE + ` (
-			user_id TEXT PRIMARY KEY NOT NULL,
-            nickname TEXT
-        );
-    `
-	_, err := db.Exec(play_table_sql)
-	_, err = db.Exec(user_table_sql)
-	if err != nil {
-		fmt.Println("创建表失败:", err)
-	}
 }
 
 func insertMDData(db *sql.DB, dbData MDdbData) error {
@@ -185,27 +166,27 @@ func insertMDData(db *sql.DB, dbData MDdbData) error {
 	ON CONFLICT(platform, music_album_id,music_album_song_id,music_difficulty,rank)
 	DO UPDATE SET user_id=excluded.user_id,acc=excluded.acc,miss=excluded.miss,score=excluded.score,judge=excluded.judge,character_uid=excluded.character_uid,elfin_uid=excluded.elfin_uid,updated_at=excluded.updated_at,rks=excluded.rks`
 	queryUser := `INSERT OR REPLACE INTO 
-	mduser (user_id,nickname) 
-	VALUES (?, ?)
+	mduser (user_id,nickname,user_rks) 
+	VALUES (?, ?, ?)
 	ON CONFLICT(user_id)
 	DO UPDATE SET nickname=excluded.nickname`
 	statement, err := db.Prepare(queryMDData)
 	if err != nil {
-		return fmt.Errorf("failed to execute statement: %v", err)
+		return fmt.Errorf("创建表失败: %v", err)
 	}
 	defer statement.Close()
 	_, err = statement.Exec(dbData.platform, dbData.musicAlbum, dbData.musicAlbumNumber, dbData.musicDiff, dbData.rank, dbData.userId, dbData.acc, dbData.miss, dbData.score, dbData.judge, dbData.characterId, dbData.elfinId, dbData.playTime, dbData.rks)
 	if err != nil {
-		return fmt.Errorf("failed to execute statement: %v", err)
+		return fmt.Errorf("创建表失败: %v", err)
 	}
 	statement, err = db.Prepare(queryUser)
 	if err != nil {
-		return fmt.Errorf("failed to execute statement: %v", err)
+		return fmt.Errorf("创建表失败: %v", err)
 	}
 	defer statement.Close()
-	_, err = statement.Exec(dbData.userId, dbData.nickname)
+	_, err = statement.Exec(dbData.userId, dbData.nickname, -1)
 	if err != nil {
-		return fmt.Errorf("failed to execute statement: %v", err)
+		return fmt.Errorf("创建表失败: %v", err)
 	}
 	return nil
 }

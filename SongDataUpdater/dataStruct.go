@@ -56,11 +56,12 @@ type songRankData struct {
 }
 
 type songRankInfo struct {
-	SongCode     int
-	AlbumCode    int
-	SongName     string
-	SongPic      string
-	SongAuthor   string
-	SongDiff     []string
-	SongRankData []songRankData
+	SongCode        int
+	AlbumCode       int
+	SongName        string
+	SongPic         string
+	SongAuthor      string
+	SongChartAuthor []string
+	SongDiff        []string
+	SongRankData    []songRankData
 }

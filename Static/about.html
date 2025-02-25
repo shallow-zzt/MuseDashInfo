@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于</title>
+    <link href="css/about.css" rel="stylesheet">
+    <link href="css/navbar.css" rel="stylesheet">
+</head>
+<body>
+  <div class="overlay" onclick="closeMenu()"></div>
+    <div class="navbar">
+        <a href="../home">主页</a>
+        <a href="../value">曲目</a>
+        <a href="../search">查询用户</a>
+        <a href="../alias">曲目别名</a>
+        <a href="../guessgame">猜曲绘</a>
+        <a href="../about">关于</a>
+        <div class="compressed" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>   
+    <div class="navbar-blank"></div>
+    <div class="title">关于&说明</div>
+    <div class="about-block-frame" id="site-info">
+      <div class="about-block-title">关于本站的说明</div>
+      <div class="about-block-divider"></div>
+      <div class="about-block-content">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        本站（<a href="./">musedash.info</a>）是一个给大家提供MuseDash相关数据查看以及<del>玩猜曲绘小游戏</del>的小破站。
+        </br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        该网站是一个非官方的项目，<a href="https://i.amquora.blue/">本站开发者</a><strong>并无</strong>任何站内引用的曲绘或者歌曲版权，其版权归原创作者所有。        
+        </br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      本站与<a href="https://musedash.peropero.net/#/home">MuseDash官方</a>以及<a href="https://cdn.peroperogames.com">PeroPeroGames/HasuHasu</a><strong>无</strong>任何关系
+        </br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      你可以在以下途径下载并游玩MuseDash↓↓↓
+      <div class="about-select-button-area">
+        <div class="about-select-button" id="app-store">App Store</div>
+        <div class="about-select-button" id="taptap">TapTap</div>
+        <div class="about-select-button" id="google-play">GooglePlay</div>
+      </div>
+      <div class="about-select-button-area">
+        <div class="about-select-button" id="steam">Steam</div>
+        <div class="about-select-button" id="wegame">Wegame</div>
+        <div class="about-select-button" id="nintendo-switch">Switch</div>
+      </div>
+      </div>
+    </div>
+    <div class="about-block-frame" id="value-source">
+      <div class="about-block-title">关于定数来源</div>
+      <div class="about-block-divider"></div>
+      <div class="about-block-content">
+          定数来源分为两部分:
+          </br>
+          难度小于7的部分通过曲目时长和note数暴力计算得到
+          </br>
+          难度大于7的部分由<a href="https://space.bilibili.com/350713726">iRis</a>协助提供(感谢iRis)
+      </div>
+    </div>
+    <div class="about-block-frame" id="rks-calculation">
+      <div class="about-block-title">RKS是如何计算的？</div>
+      <div class="about-block-divider"></div>
+      <div class="about-block-content">
+          本站的RKS的计算方式如下：
+          </br>
+          玩家的单曲RKS由两个参数动态决定：acc和曲目位次
+          </br>
+          排名参数 = max(0, (800-位次数)*0.0001) + 1
+          </br>
+          单曲RKS = 曲目定数*acc*排名参数
+          </br>
+          因此，单曲RKS的最高值为曲目定数的1.08倍（即100%的acc+第一名位次）
+          </br>
+          玩家的总RKS为前50首最高RKS曲目的平均值
+      </div>
+    </div>
+    <div class="about-block-frame" id="rks-calculation">
+      <div class="about-block-title">开发人员及其他技术支持~</div>
+      <div class="about-block-divider"></div>
+      <div class="about-block-content">
+          <a href="https://i.amquora.blue/">浅水ShallowAqua</a> —— 本站的主要开发者          
+          </br>
+          (<a href="https://oc.amquora.blue/index.html?lang=zh-cn&chara=shellxy">浅水家养的OC -- 檐下汐</a>) 本站首页就有她的身影喔~
+          </br>
+          <a href="https://space.bilibili.com/350713726">iRis</a> —— 提供难度大于7的定数数据
+          </br>
+          <a href="https://space.bilibili.com/3053285">小弓poi</a> —— 站内檐下汐的线稿表情图的画师
+      </div>
+    </div>
+    <div class="about-block-frame" id="rks-calculation">
+      <div class="about-block-title">bug反馈/开源相关</div>
+      <div class="about-block-divider"></div>
+      <div class="about-block-content">
+        本站前端使用原生HTML/CSS/JS编写，后端使用Golang编写
+        </br>
+        你可以在Github里面提交issue反馈本站的bug
+        </br>
+        当然，要是能给个Star<img src="https://img.shields.io/github/stars/shallow-zzt/MuseDashInfo">就更好啦~
+        </br>
+        也可以在爱发电或者其他渠道支持<a href="https://i.amquora.blue/">开发者</a>喔~开发者会很开心的~
+       <div class="about-select-button-area">
+        <div class="about-select-button" id="github">Github</div>
+        <div class="about-select-button" id="afdian">爱发电</div>
+        <div class="about-select-button" id="donation">直接打赏</div>
+      </div>
+      <div class="about-block-pic" id="donation-pic">
+        <img src="pic/donation.webp">
+      </div>
+      </div>
+    </div>
+    <div class="about-block-frame" id="rks-calculation">
+        <div class="about-block-title">交流群</div>
+        <div class="about-block-divider"></div>
+        <div class="about-block-content">
+          不来交流群玩一下吗，里面有可爱的<a href="https://oc.amquora.blue/index.html?lang=zh-cn&chara=shellxy">檐下汐</a>喔~
+        </br>
+          虽然<a href="https://help.amquora.blue">檐下汐</a>也能查musedash数据，但是还没和本站同步，用的还是上一代的查询系统，不过后面会更新的（别打我
+        </br>
+        进来和小伙伴们一起玩玩也不错的说！
+         <div class="about-select-button-area">
+          <div class="about-select-button" id="qq-group">加入QQ群</div>
+        </div>
+        </div>
+      </div>
+    <script src="js/about.js"></script>
+    <script src="js/navbar.js"></script>
+</body>
+</html>

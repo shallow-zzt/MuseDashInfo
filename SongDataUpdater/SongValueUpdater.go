@@ -50,7 +50,7 @@ func SongValueTableInit(db *sql.DB) {
     `
 	_, err := db.Exec(play_table_sql)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("创建表失败:", err)
 	}
 }
 
@@ -75,6 +75,7 @@ func CalStaticValue(outputData bool) {
 	rowDatas := getSongStaticValueData(DBConnector())
 	valueList := make([][]float64, 13)
 	for _, rowData := range rowDatas {
+		fmt.Println(rowData)
 		for i := 0; i <= 3; i++ {
 			songDiffBase, err := strconv.Atoi(rowData.SongDiff[i])
 			if err != nil {
@@ -106,6 +107,31 @@ func CalStaticValue(outputData bool) {
 
 	if outputData {
 		outputCalData(valueList)
+	}
+}
+
+func ImportSongValueFromJsonFile() {
+	valueJsonFiles := getJsonRawFile("song_value.json").(map[string]interface{})
+	for key, valueJsonFile := range valueJsonFiles {
+		fmt.Println(key, valueJsonFile)
+		var valueMap songValueMap
+		var err error
+		valueMap.AlbumCode, err = strconv.Atoi(strings.Split(key, "-")[0])
+		valueMap.SongCode, err = strconv.Atoi(strings.Split(key, "-")[1])
+		if err != nil {
+			panic(err)
+		}
+		for songDiff := 0; songDiff < len(valueJsonFile.([]interface{})); songDiff++ {
+			valueMap.SongDiffTier = songDiff
+			if !strings.ContainsAny(valueJsonFile.([]interface{})[songDiff].(string), ".") {
+				continue
+			}
+			valueMap.SongValue, err = strconv.ParseFloat(valueJsonFile.([]interface{})[songDiff].(string), 64)
+			if err != nil {
+				panic(err)
+			}
+			insertValueData(DBConnector(), valueMap)
+		}
 	}
 }
 

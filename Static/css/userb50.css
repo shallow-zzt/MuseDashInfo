@@ -1,3 +1,6 @@
+body {
+  overflow-x: hidden;
+}
 .userdata-title{
   width: 80%;
   margin: 30px 5px 0px 5px;
@@ -7,6 +10,7 @@
   width:280px;
   height:100px;
   display:grid;
+  margin:0px 0px 0px 10px;
   border: 3px dashed #66CCFF;
   background-color:#d2ebee;
 }
@@ -17,6 +21,10 @@
   margin:0px 0px 0px 10px;
   border: 3px dashed #66CCFF;
   background-color:#d2ebee;
+}
+.rks-chart-area{
+  width:340px;
+  height:110px;
 }
 .username{
   min-height: 30px;
@@ -42,8 +50,17 @@
   color: #333333;
 }
 .divider{
-  margin:5px;
-  border:3px solid #666666;
+  margin: 5px 0;
+  border: 3px solid #666666;
+  width: calc(100vw-10px);
+  box-sizing: border-box;
+}
+.song-data-list-area{
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
 }
 .song-pic-list {
     display: flex;
@@ -91,12 +108,13 @@
   top: 0; 
   left: 0;
   width:25px;
-  height:25px;
+  height:22px;
   color:white;
   display:grid;
   justify-content:center;
   background-color:#8b28bd;
   border-radius:8px;
+  padding-top: 3px;
 }
 .song-detail-area{
   width:100px;
@@ -158,6 +176,13 @@
   justify-content:center;
   border-radius:0px 0px 10px 10px;
 }
+.sub-title{
+  width: 100%;
+font-size: 20px;
+color: #666666;
+  text-align: center;
+}
+
 
 #easy{
   background-color: #12af47;
@@ -181,4 +206,20 @@
 
 #mobile{
   background-color: #a16101;
+}
+
+@media screen and (max-width: 800px) {
+  .sub-title{
+      width: 100%;
+    font-size: 18px;
+    color: #666666;
+      text-align: center;
+  }
+
+}
+
+@media screen and (max-width: 700px){
+  .rks-chart-area{
+    display: none;
+  }
 }

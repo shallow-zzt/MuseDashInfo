@@ -7,8 +7,11 @@
     <link href="css/usersearch.css" rel="stylesheet">
     <link href="css/long-searchbar.css" rel="stylesheet">
     <link href="css/navbar.css" rel="stylesheet">
+    <link href="css/no-result.css" rel="stylesheet">
+    <link href="css/pagebar.css" rel="stylesheet">
 </head>
 <body>
+  <div class="overlay" onclick="closeMenu()"></div>
   <div class="navbar">
     <a href="../home">主页</a>
     <a href="../value">曲目</a>
@@ -16,39 +19,62 @@
     <a href="../alias">曲目别名</a>
     <a href="../guessgame">猜曲绘</a>
     <a href="../about">关于</a>
+    <div class="compressed" onclick="toggleMenu()">
+      <div></div>
+      <div></div>
+      <div></div>
+  </div>
 </div>
 <div class="navbar-blank"></div>
+    <div class="title">玩家数据查询</div>
     <div class="searchbox">
         <input type="text" id="user-search-content" name="input" placeholder="搜索用户名或者ID">
         <div class="search-button" id="submit-search">搜索</div>
-      </div>
+    </div>
       <div class="divider"></div>
-      {{if ne .UserNum 0}}
-      <div class="result-title" id="result-title">搜索结果</div>
-      {{ end }}
-      {{if lt .UserNum 0}}
-      <div class="result-tip">
-        <div class="result-tip-pic"></div>
-        <div class="result-title">什么也没有捏~</div>  
-      </div>
-      {{ end }}
-      {{if gt .UserNum 0}}
-      <div class="user-result-list" id="user-result-list">
-        {{ range .UserDetails }}
-        <div class="userdata-title" id="{{.UserId}}">
-        <div class="userdata-content">
-            <div class="username">{{.UserName}}</div>
-            <div class="userid">{{.UserId}}</div>  
+      <div class="user-search-frame">
+        {{if eq .UserNum -1}}
+        <div class="result-tip">
+          <div class="result-tip-pic" id="status-pic"><img src="pic/idle.webp"></div>
+          <div class="result-title" id="status-tip-1">请在输入框搜索玩家~</div>  
+          <div class="result-title" id="status-tip-2">(只有上过排行榜的才可以喔~)</div>  
         </div>
-        <div class="vertical-divider"></div>
-        <div class="userdata-rks">
-            <div class="rks-title">RKS</div>
-            <div class="rks-value">{{.UserRKSString}}</div>      
+        {{ end }}
+        {{if ne .UserNum -1}}
+        <div class="result-title" id="result-title">搜索结果</div>
+        {{ end }}
+        {{if eq .UserNum 0}}
+        <div class="result-tip">
+          <div class="result-tip-pic"><img src="pic/no-result.webp"></div>
+          <div class="result-title">什么也没有捏~</div>  
         </div>
+        {{ end }}
+        {{if gt .UserNum 0}}
+        <div class="user-result-list" id="user-result-list">
+          {{ range .UserDetails }}
+          <div class="userdata-title" id="{{.UserId}}">
+          <div class="userdata-content">
+              <div class="username">{{.UserName}}</div>
+              <div class="userid">{{.UserId}}</div>  
+          </div>
+          <div class="vertical-divider"></div>
+          <div class="userdata-rks">
+              <div class="rks-title">RKS</div>
+              <div class="rks-value">{{.UserRKSString}}</div>      
+          </div>
+        </div>
+        {{ end }}
+        </div>
+        <div class="pagebox">
+          <div class="page-button" id="previous-page">←</div>
+          <div class="page-counter"> 第 <div id="now-page">{{.UserPage}}</div> 页 / 共 <div id="total-page">{{.UserTotalPage}}</div> 页</div>
+          <div class="page-button" id="next-page">→</div>
+        </div>
+        {{ end }}        
       </div>
-      {{ end }}
-      </div>
-      {{ end }}
+
 </body>
 <script src="js/usersearch.js"></script>
+<script src="js/page.js"></script>
+<script src="js/navbar.js"></script>
 </html>

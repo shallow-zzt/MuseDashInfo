@@ -106,7 +106,7 @@ func SongUpdater() {
 					fmt.Println(err)
 				}
 				insertMDData(db, musicData)
-
+				fmt.Println(musicData)
 			}
 		}
 	}
@@ -154,6 +154,10 @@ func GetBasicAilas() {
 		}
 
 	}
+}
+
+func ImportAliasFromJsonFile() {
+	//TODO
 }
 
 func getJsonRawFile(filename string) interface{} {

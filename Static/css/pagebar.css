@@ -1,0 +1,30 @@
+.pagebox {
+    width: 300px;
+    height: 30px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .page-button{
+    width:30px;
+    height: 30px;
+    border: 3px solid #19adf1;
+    border-radius: 5px;
+    font-size: 20px;
+    margin: 0px 10px;
+    padding: 2px 0px 0px 0px;
+    color: #333;
+    text-align:center;
+  }
+  .page-counter {
+    font-size: 20px;
+    margin: 0px 10px;
+    padding: 2px 10px 5px 10px;
+    text-align:center;
+    border-bottom: 3px dashed #19adf1;
+  }
+
+  .page-counter div {
+    display: inline;
+}

@@ -21,6 +21,17 @@ function changeOption(diff,platform){
     window.location.replace(url.toString());
 }
 
+function displaySongChartAuthor(){
+    const chartAuthorList = document.getElementById("chart-author-list");
+    chartAuthorListChilds =chartAuthorList.getElementsByTagName("div");
+    chartAuthorCount = chartAuthorListChilds.length;
+    if(chartAuthorCount != 1) {
+        chartAuthorListChilds[diff].style.display = "block";    
+    }else{
+        chartAuthorListChilds[0].style.display = "block";    
+    }
+}
+
 document.getElementById("diff-area").addEventListener('click', (event) => {
     if(event.target.matches("#easy")){
         changeOption(0,platform);
@@ -53,3 +64,30 @@ document.getElementById("rank-table").addEventListener('click', (event) => {
     }
 }
 );
+
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("rank-user-search");
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    input.addEventListener("input", function () {
+        const filterText = input.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const usernameCell = row.querySelector("td:nth-child(2) .user-underline");
+            if (usernameCell) {
+                const username = usernameCell.textContent.toLowerCase();
+                if (username.includes(filterText)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        });
+    });
+});
+
+window.addEventListener('load', function() {
+    displaySongChartAuthor();
+});
+
+

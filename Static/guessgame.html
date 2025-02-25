@@ -8,6 +8,7 @@
   <link href="css/navbar.css" rel="stylesheet">
 </head>
 <body>
+  <div class="overlay" onclick="closeMenu()"></div>
   <div class="navbar">
     <a href="../home">主页</a>
     <a href="../value">曲目</a>
@@ -15,6 +16,11 @@
     <a href="../alias">曲目别名</a>
     <a href="../guessgame">猜曲绘</a>
     <a href="../about">关于</a>
+    <div class="compressed" onclick="toggleMenu()">
+      <div></div>
+      <div></div>
+      <div></div>
+  </div>
 </div>
   <div class="container">
     <div id="quest-title">这是哪首曲目的曲绘？</div>
@@ -33,5 +39,6 @@
     <div id="possible-answer"></div>
   </div>
   <script src="js/guessgame.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html>

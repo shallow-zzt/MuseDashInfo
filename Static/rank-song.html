@@ -6,8 +6,10 @@
     <title>排行榜</title>
     <link href="../../css/rank-song.css" rel="stylesheet">
     <link href="../../css/navbar.css" rel="stylesheet">
+    <link href="../../css/no-result.css" rel="stylesheet">
 </head>
 <body>
+    <div class="overlay" onclick="closeMenu()"></div>
     <div class="navbar">
         <a href="../home">主页</a>
         <a href="../value">曲目</a>
@@ -15,36 +17,44 @@
         <a href="../alias">曲目别名</a>
         <a href="../guessgame">猜曲绘</a>
         <a href="../about">关于</a>
+        <div class="compressed" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
     <div class="navbar-blank"></div>
     <div class="title">排行榜</div>
+    <div class="sub-title">出现疑似作弊数据可以前往<a href="https://service.peropero.net/#/report">这里</a>反馈！</div>
     <div class="song-area">
         <div class="song-pic-area"><img src="../alias/pic/{{.SongPic}}.png"></div>
         <div class="song-info-area">
             <div class="song-name-area">{{.SongName}}</div>
-            <div class="song-author-area">{{ .SongAuthor }}</div>
+            <div class="song-author-area">曲师：{{ .SongAuthor }}</div>
+            <div id="chart-author-list">
+            {{ range $index, $item := .SongChartAuthor }}
+            <div class="song-chart-author-area" id="{{ $index }}">谱师：{{ $item }}</div>
+            {{ end }}
+            </div>
         </div>
     </div>
-
     <div class="select-bar-area" id="diff-area">
         {{if ne (index .SongDiff 0) "0"}}<div class="select-bar" id="easy">萌新 {{index .SongDiff 0}}</div>{{ end }}
         {{if ne (index .SongDiff 1) "0"}}<div class="select-bar" id="hard">高手 {{index .SongDiff 1}}</div>{{ end }}
         {{if ne (index .SongDiff 2) "0"}}<div class="select-bar" id="master">大触 {{index .SongDiff 2}}</div>{{ end }}
         {{if ne (index .SongDiff 3) "0"}}<div class="select-bar" id="hidden">里谱 {{index .SongDiff 3}}</div>{{ end }}
     </div>
-    <hr>
     <div class="select-bar-area" id="platform-area">
         <div class="select-bar"id="pc">PC端</div>
         <div class="select-bar"id="mobile">移动端</div>
     </div>
-    <hr>
     <div class="rank-table" id="rank-table">
         {{if .SongRankData}}
         <table>
             <thead>
             <tr>
                 <th>位次</th>
-                <th>用户名</th>
+                <th>用户名<input type="text" id="rank-user-search" name="input" placeholder="搜索"></th>
                 <th>分数</th>
                 <th>Acc</th>
                 <th>配置</th>
@@ -54,7 +64,7 @@
             {{ range .SongRankData }}
             <tr>
                 <td>{{ .Rank }}</td>
-                <td><div id="{{ .UserId }}">{{ .UserName }}</div></td>
+                <td><div class="user-underline" id="{{ .UserId }}">{{ .UserName }}</div></td>
                 <td>{{ .Score }}</td>
                 <td>{{ .Acc }}</td>
                 <td>{{ .CharaElfin }}</td>
@@ -63,12 +73,16 @@
             </tbody>
         </table>
         {{ else }}
-        暂无数据
+        <div class="result-tip">
+            <div class="result-tip-pic"><img src="../../pic/no-result.webp"></div>
+            <div class="result-title">没有排行榜数据捏~</div>  
+        </div>
         {{ end }}
     </div>
 
 </body>
 <script src="../../js/rank-song.js"></script>
+<script src="../../js/navbar.js"></script>
 <footer>
     
 </footer>

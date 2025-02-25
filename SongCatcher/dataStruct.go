@@ -48,3 +48,16 @@ type MDdbData struct {
 	nickname         string
 	rks              float64
 }
+
+type UserRksData struct {
+	userId   string
+	nickname string
+	totalRks float64
+}
+
+type UserRksHistory struct {
+	userId        string
+	rksList       []float64
+	rksStrList    []string
+	updatedAtList []string
+}
