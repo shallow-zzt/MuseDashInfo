@@ -1,4 +1,4 @@
-<div align="center" style="width:60%;margin:0 20%"><img align="center" src="https://raw.githubusercontent.com/shallow-zzt/MuseDashInfo/main/Static/image/mdinfotitle.webp" /></div>
+<div align="center" style="width:60%;margin:0 20%;"><img align="center" src="https://raw.githubusercontent.com/shallow-zzt/MuseDashInfo/main/Static/image/mdinfotitle.webp" /></div>
 <h1 align="center" style="border-bottom: none;">MuseDashInfo</h1>
 <h3 align="center">一个用来进行MuseDash相关数据查看以及<del>玩猜曲绘小游戏</del>的小破站</h3>
 <div align="center"><img align="center" src="https://img.shields.io/badge/Go-1.22-blue" /></div>
